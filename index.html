@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>p4muki — writing code</title>
+<meta name="description" content="p4muki's personal site: a coding journey, skills, and projects.">
+<link rel="icon" href="logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="#top" class="logo">
+      <img src="logo.png" alt="p4muki logo" class="logo-img">
+      p4muki
+    </a>
+    <nav class="nav" aria-label="Main menu">
+      <a href="#about">About</a>
+      <a href="#skills">Skills</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero wrap">
+    <div class="hero-text">
+      <p class="eyebrow">// hello world</p>
+      <h1 class="hero-title">I'm <span class="accent">p4muki</span>.<br>Learning to write code.</h1>
+      <p class="hero-sub">This site is where I collect what I'm learning and the small projects I build along the way. One line of code at a time.</p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn btn-primary">See projects</a>
+        <a href="#contact" class="btn btn-ghost">Get in touch</a>
+      </div>
+    </div>
+
+    <div class="editor" role="img" aria-label="Code editor preview: information about p4muki">
+      <div class="editor-bar">
+        <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+        <span class="editor-tab">about.js</span>
+      </div>
+      <pre class="editor-body"><code id="typedCode"></code><span class="cursor" id="cursor">&nbsp;</span></pre>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="section wrap reveal">
+    <p class="eyebrow">01 · about</p>
+    <h2 class="section-title">Just getting started, but serious about it.</h2>
+    <div class="about-grid">
+      <p class="about-text">
+        I'm new to coding and making progress by learning something small every day. This site
+        is both a learning log and a portfolio that will grow over time. I don't mind trying
+        things, breaking them, and rebuilding them — it's the best way to learn.
+      </p>
+      <div class="stat-card">
+        <span class="stat-label">status</span>
+        <span class="stat-value">"learning"</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">focus</span>
+        <span class="stat-value">web development</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" class="section wrap reveal">
+    <p class="eyebrow">02 · skills</p>
+    <h2 class="section-title">skills.json</h2>
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-head"><span class="skill-name">HTML</span><span class="skill-tag tag-learning">learning</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--fill:55%"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-head"><span class="skill-name">CSS</span><span class="skill-tag tag-learning">learning</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--fill:45%"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-head"><span class="skill-name">JavaScript</span><span class="skill-tag tag-new">just started</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--fill:25%"></div></div>
+      </div>
+      <div class="skill-card">
+        <div class="skill-head"><span class="skill-name">Git &amp; GitHub</span><span class="skill-tag tag-new">just started</span></div>
+        <div class="skill-bar"><div class="skill-fill" style="--fill:20%"></div></div>
+      </div>
+    </div>
+    <p class="skills-note">// note: levels are estimates, update them in script.js as you progress</p>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" class="section wrap reveal">
+    <p class="eyebrow">03 · projects</p>
+    <h2 class="section-title">What I'm working on</h2>
+    <div class="project-grid">
+      <article class="project-card">
+        <div class="project-top">
+          <span class="project-index">01</span>
+          <span class="project-status">planned</span>
+        </div>
+        <h3>First project name</h3>
+        <p>A short description: write what you built here and which tools you used.</p>
+        <div class="project-tags"><span>HTML</span><span>CSS</span></div>
+      </article>
+      <article class="project-card">
+        <div class="project-top">
+          <span class="project-index">02</span>
+          <span class="project-status">planned</span>
+        </div>
+        <h3>Second project name</h3>
+        <p>Replace this with a summary of a project you've pushed to GitHub.</p>
+        <div class="project-tags"><span>JavaScript</span></div>
+      </article>
+      <article class="project-card">
+        <div class="project-top">
+          <span class="project-index">03</span>
+          <span class="project-status">just an idea</span>
+        </div>
+        <h3>Third project name</h3>
+        <p>This spot could hold something like a small game, a calculator, or a notes app.</p>
+        <div class="project-tags"><span>idea</span></div>
+      </article>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="section wrap reveal contact-section">
+    <p class="eyebrow">04 · contact</p>
+    <h2 class="section-title">Say hello.</h2>
+    <p class="contact-sub">Questions, suggestions, or an idea to build something together? Reach out here.</p>
+    <div class="contact-card">
+      <div class="contact-row">
+        <span class="contact-label">email</span>
+        <button class="contact-value copy-btn" id="copyEmail" data-email="pamuki2020@gmail.com">
+          pamuki2020@gmail.com
+          <span class="copy-hint" id="copyHint">copy</span>
+        </button>
+      </div>
+      <div class="contact-row">
+        <span class="contact-label">github</span>
+        <a class="contact-value" href="https://github.com/p4muki" target="_blank" rel="noopener">github.com/p4muki</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <span>&copy; <span id="year"></span> p4muki</span>
+    <span class="footer-note">// 🐾 shoutout to Pamuk</span>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
