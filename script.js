@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "  name: \"p4muki\",",
     "  level: \"just starting out\",",
     "  cat: \"Pamuk\", // 🐾",
-    "  learning: [\"HTML\", \"CSS\", \"JavaScript\"],",
+    "  learning: [\"MC PVP\", \"Coding\", \"Github\"],",
     "  goal: \"a little more progress every day\",",
     "};"
   ];
