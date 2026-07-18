@@ -1,72 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Welcome</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P4MUKI</title>
 
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
-}
+    <link rel="stylesheet" href="style.css">
 
-body{
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    background:linear-gradient(135deg,#1e3c72,#2a5298);
-    color:white;
-}
-
-.container{
-    text-align:center;
-    background:rgba(255,255,255,0.1);
-    padding:40px;
-    border-radius:20px;
-    backdrop-filter:blur(10px);
-    box-shadow:0 10px 30px rgba(0,0,0,.3);
-}
-
-h1{
-    font-size:3rem;
-    margin-bottom:15px;
-}
-
-p{
-    font-size:1.2rem;
-    margin-bottom:25px;
-    color:#ddd;
-}
-
-a{
-    display:inline-block;
-    padding:12px 25px;
-    background:white;
-    color:#2a5298;
-    text-decoration:none;
-    border-radius:10px;
-    font-weight:bold;
-    transition:.3s;
-}
-
-a:hover{
-    transform:scale(1.05);
-    background:#f1f1f1;
-}
-</style>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700;900&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-<div class="container">
-    <h1>👋 Welcome!</h1>
-    <p>This website is hosted with GitHub Pages.</p>
-    <a href="https://github.com/">My GitHub</a>
+<div id="particles-js"></div>
+
+<header>
+
+<div class="logo">
+    P4MUKI
 </div>
+
+<nav>
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#projects">Projects</a>
+    <a href="#contact">Contact</a>
+</nav>
+
+</header>
+
+<section class="hero" id="home">
+
+<h1>P4MUKI</h1>
+
+<h2>I Love Minecraft • Coding • Gaming</h2>
+
+<p>Welcome to my personal website.</p>
+
+<a href="#about" class="btn">Explore ↓</a>
+
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+
+<script src="script.js"></script>
 
 </body>
 </html>
