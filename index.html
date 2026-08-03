@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>NEON ARCADE — Play Instantly</title>
+<meta name="description" content="A colorful neon arcade: Snake, 2048, Memory Match, Reflex Test, Tic-Tac-Toe, Whack-a-Mole, Breakout and Flappy Neon — all running in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Rubik+Mono+One&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+<canvas id="matrixCanvas"></canvas>
+<div class="glow-blob b1"></div>
+<div class="glow-blob b2"></div>
+<div class="glow-blob b3"></div>
+
+<header class="top">
+  <div class="topbar">
+    <a href="#top" class="brand"><span class="dot"></span>NEON ARCADE</a>
+    <nav class="games-nav" id="mainNav">
+      <button data-target="home" class="active">Home</button>
+      <button data-target="snake">Snake</button>
+      <button data-target="g2048stage">2048</button>
+      <button data-target="memory">Memory</button>
+      <button data-target="reflex">Reflex</button>
+      <button data-target="ttt">Tic-Tac-Toe</button>
+      <button data-target="whack">Whack-a-Mole</button>
+      <button data-target="breakout">Breakout</button>
+      <button data-target="flappy">Flappy</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap" id="top">
+
+  <section class="hero" id="home">
+    <div class="kicker">Free · No install · Runs in your browser</div>
+    <h1 class="title">
+      <span class="glitch-wrap">
+        PLAY&nbsp;SOMETHING
+        <span class="layer c1" aria-hidden="true">PLAY&nbsp;SOMETHING</span>
+        <span class="layer c2" aria-hidden="true">PLAY&nbsp;SOMETHING</span>
+      </span>
+    </h1>
+    <p class="subtitle">Eight tiny games, zero loading screens. Pick one below — your best scores are saved right in this browser.</p>
+    <div class="hero-cta">
+      <button class="btn primary" data-jump="snake">Play Snake →</button>
+      <button class="btn" data-jump="breakout">Try Breakout</button>
+    </div>
+  </section>
+
+  <p class="section-label">// Choose your game</p>
+  <div class="grid">
+    <div class="card" data-jump="snake" style="--glow:var(--green)">
+      <div class="icon">🐍</div>
+      <h3>Snake</h3>
+      <p>Classic grid snake. Eat, grow, don't bite yourself. Speeds up as you go.</p>
+      <div class="tag">Arrow keys / swipe</div>
+    </div>
+    <div class="card" data-jump="g2048stage" style="--glow:var(--yellow)">
+      <div class="icon">🔢</div>
+      <h3>2048</h3>
+      <p>Slide tiles, merge numbers, chase the elusive 2048 tile.</p>
+      <div class="tag">Arrow keys / swipe</div>
+    </div>
+    <div class="card" data-jump="memory" style="--glow:var(--purple)">
+      <div class="icon">🧠</div>
+      <h3>Memory Match</h3>
+      <p>Flip cards, find pairs, beat your best move count.</p>
+      <div class="tag">Click / tap</div>
+    </div>
+    <div class="card" data-jump="reflex" style="--glow:var(--cyan)">
+      <div class="icon">⚡</div>
+      <h3>Reflex Test</h3>
+      <p>Wait for green, click as fast as you can. Milliseconds matter.</p>
+      <div class="tag">Click / tap</div>
+    </div>
+    <div class="card" data-jump="ttt" style="--glow:var(--orange)">
+      <div class="icon">❌⭕</div>
+      <h3>Tic-Tac-Toe</h3>
+      <p>Face off against an unbeatable AI. Can you force a draw?</p>
+      <div class="tag">Click / tap</div>
+    </div>
+    <div class="card" data-jump="whack" style="--glow:var(--pink)">
+      <div class="icon">🔨</div>
+      <h3>Whack-a-Mole</h3>
+      <p>30 seconds, quick reflexes, moles everywhere. Beat your best.</p>
+      <div class="tag">Click / tap</div>
+    </div>
+    <div class="card" data-jump="breakout" style="--glow:var(--lime)">
+      <div class="icon">🧱</div>
+      <h3>Breakout</h3>
+      <p>Paddle, ball, bricks. A neon-soaked arcade classic.</p>
+      <div class="tag">Mouse / arrow keys / swipe</div>
+    </div>
+    <div class="card" data-jump="flappy" style="--glow:var(--teal)">
+      <div class="icon">🐤</div>
+      <h3>Flappy Neon</h3>
+      <p>Tap to flap, dodge the pipes, don't look down.</p>
+      <div class="tag">Click / tap / space</div>
+    </div>
+  </div>
+
+  <!-- SNAKE -->
+  <section class="stage" id="snake">
+    <div class="stage-head">
+      <h2>🐍 Snake</h2>
+      <div class="stat-row">
+        <div class="stat">Score <b id="snakeScore">0</b></div>
+        <div class="stat">Best <b id="snakeBest">0</b></div>
+        <button class="btn" id="snakeRestart">Restart</button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="canvas-wrap">
+        <canvas id="snakeCanvas" width="360" height="360"></canvas>
+        <div class="overlay-msg" id="snakeOverlay">
+          <h3>Ready?</h3>
+          <p class="mono" style="color:var(--ink-dim)">Use arrow keys or WASD</p>
+          <button class="btn primary" id="snakeStart">Start Game</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls-hint"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> — on mobile, swipe on the board</div>
+  </section>
+
+  <!-- 2048 -->
+  <section class="stage" id="g2048stage">
+    <div class="stage-head">
+      <h2>🔢 2048</h2>
+      <div class="stat-row">
+        <div class="stat">Score <b id="score2048">0</b></div>
+        <div class="stat">Best <b id="best2048">0</b></div>
+        <button class="btn" id="restart2048">Restart</button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="canvas-wrap">
+        <div id="g2048"></div>
+        <div class="overlay-msg" id="overlay2048" style="display:none;">
+          <h3 id="msg2048">Game Over</h3>
+          <button class="btn primary" id="again2048">Try Again</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls-hint"><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> — on mobile, swipe on the board</div>
+  </section>
+
+  <!-- MEMORY -->
+  <section class="stage" id="memory">
+    <div class="stage-head">
+      <h2>🧠 Memory Match</h2>
+      <div class="stat-row">
+        <div class="stat">Moves <b id="memMoves">0</b></div>
+        <div class="stat">Best <b id="memBest">—</b></div>
+        <button class="btn" id="memRestart">Restart</button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div id="memGrid"></div>
+    </div>
+  </section>
+
+  <!-- REFLEX -->
+  <section class="stage" id="reflex">
+    <div class="stage-head">
+      <h2>⚡ Reflex Test</h2>
+      <div class="stat-row">
+        <div class="stat">Last <b id="reflexLast">—</b></div>
+        <div class="stat">Best <b id="reflexBest">—</b></div>
+      </div>
+    </div>
+    <div class="stage-body" style="justify-content:center; width:100%;">
+      <div style="display:flex; flex-direction:column; align-items:center; gap:18px; width:100%;">
+        <div id="reflexBox" class="ready">
+          <div id="reflexText" style="font-size:16px;">Click to start</div>
+        </div>
+        <ul class="best-list" id="reflexHistory"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIC TAC TOE -->
+  <section class="stage" id="ttt">
+    <div class="stage-head">
+      <h2>❌⭕ Tic-Tac-Toe</h2>
+      <div class="stat-row">
+        <div class="stat">Wins <b id="tttWins">0</b></div>
+        <div class="stat">Draws <b id="tttDraws">0</b></div>
+        <div class="stat">Losses <b id="tttLoss">0</b></div>
+        <button class="btn" id="tttRestart">New Round</button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="canvas-wrap">
+        <div id="tttGrid"></div>
+        <div class="overlay-msg" id="tttOverlay" style="display:none;">
+          <h3 id="tttMsg">Round over</h3>
+          <button class="btn primary" id="tttAgain">Play Again</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls-hint">You're X. The AI plays optimally — a draw is a great result.</div>
+  </section>
+
+  <!-- WHACK A MOLE -->
+  <section class="stage" id="whack">
+    <div class="stage-head">
+      <h2>🔨 Whack-a-Mole</h2>
+      <div class="stat-row">
+        <div class="stat">Score <b id="whackScore">0</b></div>
+        <div class="stat">Best <b id="whackBest">0</b></div>
+        <div class="stat">Time <b id="whackTime">30</b>s</div>
+        <button class="btn" id="whackStart">Start</button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div id="whackGrid"></div>
+    </div>
+  </section>
+
+  <!-- BREAKOUT -->
+  <section class="stage" id="breakout">
+    <div class="stage-head">
+      <h2>🧱 Breakout</h2>
+      <div class="stat-row">
+        <div class="stat">Score <b id="breakScore">0</b></div>
+        <div class="stat">Lives <b id="breakLives">3</b></div>
+        <div class="stat">Best <b id="breakBest">0</b></div>
+        <button class="btn" id="breakRestart">Restart</button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="canvas-wrap">
+        <canvas id="breakCanvas" width="420" height="320"></canvas>
+        <div class="overlay-msg" id="breakOverlay">
+          <h3>Ready?</h3>
+          <p class="mono" style="color:var(--ink-dim)">Move the mouse, or use ← →</p>
+          <button class="btn primary" id="breakStart">Start Game</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls-hint">Mouse move or <kbd>←</kbd><kbd>→</kbd> to steer the paddle — on mobile, drag left/right on the board</div>
+  </section>
+
+  <!-- FLAPPY -->
+  <section class="stage" id="flappy">
+    <div class="stage-head">
+      <h2>🐤 Flappy Neon</h2>
+      <div class="stat-row">
+        <div class="stat">Score <b id="flapScore">0</b></div>
+        <div class="stat">Best <b id="flapBest">0</b></div>
+        <button class="btn" id="flapRestart">Restart</button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="canvas-wrap">
+        <canvas id="flapCanvas" width="360" height="420"></canvas>
+        <div class="overlay-msg" id="flapOverlay">
+          <h3>Ready?</h3>
+          <p class="mono" style="color:var(--ink-dim)">Click, tap, or press space to flap</p>
+          <button class="btn primary" id="flapStart">Start Game</button>
+        </div>
+      </div>
+    </div>
+    <div class="controls-hint"><kbd>Space</kbd> or click the board to flap</div>
+  </section>
+
+</div>
+
+<footer>
+  Built with vanilla JS · no frameworks, no tracking · scores saved locally in your browser<br>
+  <a href="https://github.com/" target="_blank" rel="noopener">View on GitHub</a>
+</footer>
+
+<canvas class="confetti-canvas" id="confettiCanvas"></canvas>
+
+<!-- ============ SECRET OWNER PANEL (hidden by default) ============ -->
+<div id="ownerPanel" class="owner-panel" aria-hidden="true">
+  <div class="owner-inner">
+    <div class="owner-head">
+      <span class="owner-title">⚙ OWNER PANEL</span>
+      <button id="ownerClose" class="owner-close" aria-label="Close owner panel">✕</button>
+    </div>
+    <div class="owner-body">
+      <div class="owner-block">
+        <div class="owner-label">Theme</div>
+        <div class="theme-swatches">
+          <button class="swatch" data-theme="neon" style="--sw1:#ff2e88;--sw2:#00e5ff" title="Neon"></button>
+          <button class="swatch" data-theme="sunset" style="--sw1:#ff7a3d;--sw2:#ffd23f" title="Sunset"></button>
+          <button class="swatch" data-theme="matrix" style="--sw1:#0aff6a;--sw2:#003b12" title="Matrix"></button>
+          <button class="swatch" data-theme="vaporwave" style="--sw1:#ff8ad8;--sw2:#8ad8ff" title="Vaporwave"></button>
+        </div>
+      </div>
+      <div class="owner-block">
+        <div class="owner-label">Effects</div>
+        <label class="owner-toggle">
+          <input type="checkbox" id="matrixToggle">
+          <span>Matrix rain background</span>
+        </label>
+        <label class="owner-toggle">
+          <input type="checkbox" id="rainbowToggle">
+          <span>Rainbow title mode</span>
+        </label>
+      </div>
+      <div class="owner-block">
+        <div class="owner-label">Stats</div>
+        <div class="owner-stats mono">
+          <div>Games started: <b id="ownerGamesPlayed">0</b></div>
+          <div>Visits: <b id="ownerVisits">0</b></div>
+        </div>
+      </div>
+      <div class="owner-block owner-actions">
+        <button class="btn" id="confettiBtn">🎉 Fire confetti</button>
+        <button class="btn" id="resetScoresBtn">🗑 Reset all scores</button>
+      </div>
+      <div class="owner-footer mono">unlocked with the secret code</div>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
