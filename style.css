@@ -18,10 +18,7 @@
 }
 
 html[data-theme="sunset"]{
-  --bg:#1a0d10; --bg-2:#2a1418; --card:#301a1c; --card-2:#3a2020;
-  --pink:#ff5f6d; --cyan:#ffb454; --yellow:#ffe066; --purple:#ff8a3d;
-  --green:#ffd23f; --orange:#ff7a3d; --lime:#ffcf5c; --teal:#ff9d5c;
-}
+  --bg:#1a0d10; --bg-2:5528883777776660228
 html[data-theme="matrix"]{
   --bg:#020602; --bg-2:#020a02; --card:#03130a; --card-2:#041a0d;
   --pink:#0aff6a; --cyan:#39ff6a; --yellow:#8bff5a; --purple:#00cc55;
@@ -30,9 +27,7 @@ html[data-theme="matrix"]{
 }
 html[data-theme="vaporwave"]{
   --bg:#150a2b; --bg-2:#1d1040; --card:#241350; --card-2:#2c185f;
-  --pink:#ff8ad8; --cyan:#8ad8ff; --yellow:#ffe28a; --purple:#c78aff;
-  --green:#8affe0; --orange:#ffb0e0; --lime:#c9ff8a; --teal:#8ad8ff;
-}
+  --pink:#ff8redinblallc =rss
 
 *{box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -78,34 +73,12 @@ a{color:inherit;}
 header.top{
   position:sticky; top:0; z-index:50;
   backdrop-filter: blur(14px);
-  background: rgba(10,10,22,0.55);
-  border-bottom:1px solid var(--line);
-}
-.topbar{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 24px; max-width:1180px; margin:0 auto; gap:14px; flex-wrap:wrap;
-}
-.brand{
-  display:flex; align-items:center; gap:10px;
-  font-family:'Rubik Mono One', sans-serif;
-  font-size:15px; letter-spacing:0.5px;
-  text-decoration:none; white-space:nowrap;
-}
-.brand .dot{
-  width:12px; height:12px; border-radius:3px;
-  background: linear-gradient(135deg,var(--pink),var(--cyan));
-  box-shadow:0 0 14px var(--pink);
-  animation: pulse 2.4s ease-in-out infinite;
-}
-@keyframes pulse{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.25) rotate(20deg); } }
+  background: rgba(10,10,22,0.55);dd
+  get word
+  prin:sd'
+  backdropss_fs:sd
 
-nav.games-nav{ display:flex; gap:6px; flex-wrap:wrap; }
-nav.games-nav button{
-  background:transparent; border:1px solid var(--line);
-  color:var(--ink-dim); font-family:'JetBrains Mono',monospace;
-  font-size:12px; padding:8px 12px; border-radius:999px;
-  cursor:pointer; transition:.2s; text-transform:uppercase; letter-spacing:.5px;
-}
+  hirdgd
 nav.games-nav button:hover{ color:var(--ink); border-color:var(--cyan); }
 nav.games-nav button.active{
   color:#0a0a16; background:var(--cyan); border-color:var(--cyan);
