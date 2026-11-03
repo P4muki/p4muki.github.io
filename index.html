@@ -2,13 +2,53 @@
 <html>
 <body>
   <button id="start">Share screen</button>
-  <br>
-  <video id="v" autoplay muted style="max-width:100%"></video>
+  <p id="msg">Click "Share screen" first.</p>
+  <canvas id="c" style="max-width:100%"></canvas>
+  <video id="v" autoplay muted style="display:none"></video>
+
   <script>
+    const v = document.getElementById("v");
+    const c = document.getElementById("c");
+    const ctx = c.getContext("2d");
+    const msg = document.getElementById("msg");
+    let corners = [];
+
     document.getElementById("start").onclick = async () => {
       const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      document.getElementById("v").srcObject = stream;
+      v.srcObject = stream;
+      v.onloadedmetadata = () => {
+        c.width = v.videoWidth;
+        c.height = v.videoHeight;
+        msg.textContent = "Click the TOP-LEFT corner of the board, then the BOTTOM-RIGHT corner.";
+        draw();
+      };
     };
+
+    c.onclick = (e) => {
+      const r = c.getBoundingClientRect();
+      const x = (e.clientX - r.left) * c.width / r.width;
+      const y = (e.clientY - r.top) * c.height / r.height;
+      if (corners.length >= 2) corners = [];
+      corners.push({ x, y });
+      msg.textContent = corners.length === 1
+        ? "Now click the BOTTOM-RIGHT corner."
+        : "Does the red grid line up with the squares? If not, click again to redo it.";
+    };
+
+    function draw() {
+      ctx.drawImage(v, 0, 0, c.width, c.height);
+      if (corners.length === 2) {
+        const [a, b] = corners;
+        const w = (b.x - a.x) / 8, h = (b.y - a.y) / 8;
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 2;
+        for (let i = 0; i <= 8; i++) {
+          ctx.beginPath(); ctx.moveTo(a.x + i * w, a.y); ctx.lineTo(a.x + i * w, b.y); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(a.x, a.y + i * h); ctx.lineTo(b.x, a.y + i * h); ctx.stroke();
+        }
+      }
+      requestAnimationFrame(draw);
+    }
   </script>
 </body>
 </html>
