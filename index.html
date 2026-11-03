@@ -1,54 +1,278 @@
 <!DOCTYPE html>
 <html>
+<head>
+<meta charset="utf-8">
+<title>Chess helper</title>
+<style>
+  body { font-family: sans-serif; margin: 8px; }
+  button, select { font-size: 16px; margin: 2px; }
+  #info { font-family: monospace; font-size: 13px; }
+</style>
+</head>
 <body>
-  <button id="start">Share screen</button>
-  <p id="msg">Click "Share screen" first.</p>
-  <canvas id="c" style="max-width:100%"></canvas>
-  <video id="v" autoplay muted style="display:none"></video>
+<button id="start">1. Share screen</button>
+<button id="learn">3. Learn pieces</button>
+<label>Best move for:
+  <select id="side"><option value="w">White</option><option value="b">Black</option></select>
+</label>
+<label><input type="checkbox" id="flip"> My side is at the top (I'm black)</label>
+<label><input type="checkbox" id="debug" checked> Show what it sees</label>
+<p id="msg">Click "1. Share screen" and pick the Roblox window.</p>
+<p id="info"></p>
+<canvas id="c" style="max-width:100%"></canvas>
+<video id="v" autoplay muted style="display:none"></video>
 
-  <script>
-    const v = document.getElementById("v");
-    const c = document.getElementById("c");
-    const ctx = c.getContext("2d");
-    const msg = document.getElementById("msg");
-    let corners = [];
+<script>
+const N = 24;
+const v = document.getElementById("v");
+const c = document.getElementById("c");
+const ctx = c.getContext("2d");
+const msgEl = document.getElementById("msg");
+const infoEl = document.getElementById("info");
+const sideEl = document.getElementById("side");
+const flipEl = document.getElementById("flip");
+const debugEl = document.getElementById("debug");
+const sq = document.createElement("canvas");
+sq.width = sq.height = N;
+const sctx = sq.getContext("2d", { willReadFrequently: true });
 
-    document.getElementById("start").onclick = async () => {
-      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      v.srcObject = stream;
-      v.onloadedmetadata = () => {
-        c.width = v.videoWidth;
-        c.height = v.videoHeight;
-        msg.textContent = "Click the TOP-LEFT corner of the board, then the BOTTOM-RIGHT corner.";
-        draw();
-      };
-    };
+let corners = [], templates = [], bgByParity = null;
+let ready = false, engine = null, best = null, lastGrid = null;
+let candidate = "", count = 0, analyzed = "";
+let searching = false, pending = null;
 
-    c.onclick = (e) => {
-      const r = c.getBoundingClientRect();
-      const x = (e.clientX - r.left) * c.width / r.width;
-      const y = (e.clientY - r.top) * c.height / r.height;
-      if (corners.length >= 2) corners = [];
-      corners.push({ x, y });
-      msg.textContent = corners.length === 1
-        ? "Now click the BOTTOM-RIGHT corner."
-        : "Does the red grid line up with the squares? If not, click again to redo it.";
-    };
+const say = (t) => msgEl.textContent = t;
 
-    function draw() {
-      ctx.drawImage(v, 0, 0, c.width, c.height);
-      if (corners.length === 2) {
-        const [a, b] = corners;
-        const w = (b.x - a.x) / 8, h = (b.y - a.y) / 8;
-        ctx.strokeStyle = "red";
-        ctx.lineWidth = 2;
-        for (let i = 0; i <= 8; i++) {
-          ctx.beginPath(); ctx.moveTo(a.x + i * w, a.y); ctx.lineTo(a.x + i * w, b.y); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(a.x, a.y + i * h); ctx.lineTo(b.x, a.y + i * h); ctx.stroke();
-        }
+// ---------- screen share ----------
+document.getElementById("start").onclick = async () => {
+  const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+  v.srcObject = stream;
+  v.onloadedmetadata = () => {
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    ready = true;
+    say("2. Click the TOP-LEFT corner of the board, then the BOTTOM-RIGHT corner.");
+    draw();
+  };
+  loadEngine();
+};
+
+c.onclick = (e) => {
+  const r = c.getBoundingClientRect();
+  const x = (e.clientX - r.left) * c.width / r.width;
+  const y = (e.clientY - r.top) * c.height / r.height;
+  if (corners.length >= 2) { corners = []; templates = []; }
+  corners.push({ x, y });
+  say(corners.length === 1
+    ? "Now click the BOTTOM-RIGHT corner."
+    : "Check the red grid. Then, with the game at the START position, click '3. Learn pieces'.");
+};
+
+function rect() {
+  const [p, q] = corners;
+  const x0 = Math.min(p.x, q.x), y0 = Math.min(p.y, q.y);
+  const x1 = Math.max(p.x, q.x), y1 = Math.max(p.y, q.y);
+  return { x: x0, y: y0, w: (x1 - x0) / 8, h: (y1 - y0) / 8 };
+}
+
+// ---------- engine ----------
+async function loadEngine() {
+  if (engine) return;
+  try {
+    const url = "https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js";
+    const code = await (await fetch(url)).text();
+    const blob = new Blob([code], { type: "application/javascript" });
+    engine = new Worker(URL.createObjectURL(blob));
+    engine.onmessage = (e) => {
+      const line = typeof e.data === "string" ? e.data : "";
+      if (line.startsWith("bestmove")) {
+        searching = false;
+        if (pending) { const p = pending; pending = null; run(p); }
+        else best = line.split(" ")[1];
       }
-      requestAnimationFrame(draw);
+    };
+    engine.postMessage("uci");
+  } catch (err) {
+    say("Engine failed to load: " + err + " (tell me and we'll host it in your repo instead)");
+  }
+}
+function analyze(fen) {
+  if (!engine) return;
+  if (searching) { pending = fen; engine.postMessage("stop"); return; }
+  run(fen);
+}
+function run(fen) {
+  searching = true;
+  engine.postMessage("position fen " + fen);
+  engine.postMessage("go movetime 800");
+}
+
+// ---------- reading the board ----------
+function readSquares() {
+  const R = rect();
+  const out = [];
+  for (let r = 0; r < 8; r++) {
+    out.push([]);
+    for (let f = 0; f < 8; f++) {
+      sctx.drawImage(v, R.x + f * R.w, R.y + r * R.h, R.w, R.h, 0, 0, N, N);
+      out[r].push(sctx.getImageData(0, 0, N, N).data);
     }
-  </script>
+  }
+  return out;
+}
+function median(a) { a = a.slice().sort((x, y) => x - y); return a[a.length >> 1]; }
+function squareColor(d) {
+  const ch = [[], [], []];
+  for (let i = 0; i < N * N; i++) for (let k = 0; k < 3; k++) ch[k].push(d[i * 4 + k]);
+  return ch.map(median);
+}
+function squareBg(d, r, f) {
+  const base = bgByParity[(r + f) % 2];
+  let s = [0, 0, 0], n = 0;
+  for (let y = 2; y < 4; y++) for (let x = N - 4; x < N - 2; x++) {
+    const i = (y * N + x) * 4;
+    s[0] += d[i]; s[1] += d[i + 1]; s[2] += d[i + 2]; n++;
+  }
+  const p = s.map(t => t / n);
+  const diff = Math.abs(p[0] - base[0]) + Math.abs(p[1] - base[1]) + Math.abs(p[2] - base[2]);
+  return diff > 40 ? p : base; // highlighted square -> use its own colour
+}
+function silhouette(d, bgc) {
+  const T = 60;
+  const bgLike = new Uint8Array(N * N);
+  for (let i = 0; i < N * N; i++) {
+    const dist = Math.abs(d[i * 4] - bgc[0]) + Math.abs(d[i * 4 + 1] - bgc[1]) + Math.abs(d[i * 4 + 2] - bgc[2]);
+    bgLike[i] = dist < T ? 1 : 0;
+  }
+  const outside = new Uint8Array(N * N), stack = [];
+  const seed = (p) => { if (bgLike[p] && !outside[p]) { outside[p] = 1; stack.push(p); } };
+  for (let i = 0; i < N; i++) { seed(i); seed((N - 1) * N + i); seed(i * N); seed(i * N + N - 1); }
+  while (stack.length) {
+    const p = stack.pop(), x = p % N, y = (p / N) | 0;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
+      const q = ny * N + nx;
+      if (bgLike[q] && !outside[q]) { outside[q] = 1; stack.push(q); }
+    }
+  }
+  const sil = new Uint8Array(N * N); let cnt = 0;
+  for (let i = 0; i < N * N; i++) { sil[i] = outside[i] ? 0 : 1; cnt += sil[i]; }
+  return { sil, cnt };
+}
+
+document.getElementById("learn").onclick = () => {
+  if (corners.length < 2) { say("Click the two board corners first."); return; }
+  const sqs = readSquares();
+  const cols = [[], []];
+  for (let r = 2; r <= 5; r++) for (let f = 0; f < 8; f++) cols[(r + f) % 2].push(squareColor(sqs[r][f]));
+  bgByParity = cols.map(l => [0, 1, 2].map(k => median(l.map(x => x[k]))));
+  const flip = flipEl.checked;
+  const back = flip ? "rnbkqbnr" : "rnbqkbnr";
+  templates = [];
+  for (const r of [0, 1, 6, 7]) for (let f = 0; f < 8; f++) {
+    const t = (r === 0 || r === 7) ? back[f] : "p";
+    const { sil } = silhouette(sqs[r][f], bgByParity[(r + f) % 2]);
+    templates.push({ t, s: sil });
+  }
+  say("Learned! It should now read the board. If the letters on the board look wrong, click Learn again at a fresh start position.");
+};
+
+function classify(d, r, f) {
+  const { sil, cnt } = silhouette(d, squareBg(d, r, f));
+  if (cnt < N * N * 0.1) return "";
+  let bestT = "", bd = 1e9;
+  for (const t of templates) {
+    let dist = 0;
+    for (let i = 0; i < N * N; i++) dist += sil[i] ^ t.s[i];
+    if (dist < bd) { bd = dist; bestT = t.t; }
+  }
+  const lums = [];
+  for (let y = 6; y < 18; y++) for (let x = 6; x < 18; x++) {
+    const i = y * N + x;
+    if (sil[i]) lums.push(0.3 * d[i * 4] + 0.59 * d[i * 4 + 1] + 0.11 * d[i * 4 + 2]);
+  }
+  const med = lums.length ? median(lums) : 0;
+  return med > 120 ? bestT.toUpperCase() : bestT;
+}
+
+function makeFen(grid) {
+  const flip = flipEl.checked;
+  const b = [];
+  for (let i = 0; i < 8; i++) {
+    const row = flip ? 7 - i : i;
+    const line = grid[row].slice();
+    if (flip) line.reverse();
+    b.push(line);
+  }
+  const rows = b.map(line => {
+    let s = "", e = 0;
+    for (const p of line) { if (p === "") e++; else { if (e) s += e; e = 0; s += p; } }
+    if (e) s += e;
+    return s;
+  });
+  let castle = "";
+  if (b[7][4] === "K" && b[7][7] === "R") castle += "K";
+  if (b[7][4] === "K" && b[7][0] === "R") castle += "Q";
+  if (b[0][4] === "k" && b[0][7] === "r") castle += "k";
+  if (b[0][4] === "k" && b[0][0] === "r") castle += "q";
+  return rows.join("/") + " " + sideEl.value + " " + (castle || "-") + " - 0 1";
+}
+
+// ---------- main loop ----------
+setInterval(() => {
+  if (!ready || corners.length < 2 || !templates.length) return;
+  const sqs = readSquares();
+  const grid = sqs.map((row, r) => row.map((d, f) => classify(d, r, f)));
+  lastGrid = grid;
+  const fen = makeFen(grid);
+  infoEl.textContent = fen + (best ? "   best: " + best : "");
+  if (fen === candidate) count++; else { candidate = fen; count = 1; }
+  if (count >= 2 && candidate !== analyzed) {
+    analyzed = candidate;
+    best = null;
+    analyze(candidate);
+  }
+}, 500);
+
+// ---------- drawing ----------
+function center(s) {
+  const R = rect(), flip = flipEl.checked;
+  const f = s.charCodeAt(0) - 97, rk = +s[1];
+  const col = flip ? 7 - f : f, row = flip ? rk - 1 : 8 - rk;
+  return { x: R.x + (col + 0.5) * R.w, y: R.y + (row + 0.5) * R.h };
+}
+function arrow(a, b) {
+  ctx.strokeStyle = "lime"; ctx.fillStyle = "lime"; ctx.lineWidth = 8; ctx.globalAlpha = 0.8;
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  const ang = Math.atan2(b.y - a.y, b.x - a.x);
+  ctx.beginPath();
+  ctx.moveTo(b.x, b.y);
+  ctx.lineTo(b.x - 28 * Math.cos(ang - 0.4), b.y - 28 * Math.sin(ang - 0.4));
+  ctx.lineTo(b.x - 28 * Math.cos(ang + 0.4), b.y - 28 * Math.sin(ang + 0.4));
+  ctx.fill(); ctx.globalAlpha = 1;
+}
+function draw() {
+  ctx.drawImage(v, 0, 0, c.width, c.height);
+  if (corners.length === 2) {
+    const R = rect();
+    if (!templates.length) {
+      ctx.strokeStyle = "red"; ctx.lineWidth = 2;
+      for (let i = 0; i <= 8; i++) {
+        ctx.beginPath(); ctx.moveTo(R.x + i * R.w, R.y); ctx.lineTo(R.x + i * R.w, R.y + 8 * R.h); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(R.x, R.y + i * R.h); ctx.lineTo(R.x + 8 * R.w, R.y + i * R.h); ctx.stroke();
+      }
+    }
+    if (debugEl.checked && lastGrid) {
+      ctx.font = "bold 20px sans-serif"; ctx.fillStyle = "magenta";
+      for (let r = 0; r < 8; r++) for (let f = 0; f < 8; f++) {
+        if (lastGrid[r][f]) ctx.fillText(lastGrid[r][f], R.x + f * R.w + 4, R.y + r * R.h + 20);
+      }
+    }
+    if (best && best.length >= 4) arrow(center(best.slice(0, 2)), center(best.slice(2, 4)));
+  }
+  requestAnimationFrame(draw);
+}
+</script>
 </body>
 </html>
