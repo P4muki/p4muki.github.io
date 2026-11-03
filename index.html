@@ -21,13 +21,67 @@ function log(s){$('log').textContent+='\n['+new Date().toLocaleTimeString()+'] '
 function stop(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;video.style.display='none';$('empty').style.display='block';$('state').textContent='NOT CONNECTED';$('scan').disabled=true;$('stop').disabled=true;ctx.clearRect(0,0,overlay.width,overlay.height);$('detect').textContent='Waiting for screen';$('pieces').textContent='Not available';detected=null;log('Screen capture stopped.')}
 $('share').onclick=async()=>{try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:10},audio:false});video.srcObject=stream;await video.play();video.style.display='block';$('empty').style.display='none';$('state').textContent='SCREEN CONNECTED';$('stop').disabled=false;$('scan').disabled=false;stream.getVideoTracks()[0].addEventListener('ended',stop);log('Screen connected. Press Scan for board.')}catch(e){log('Share error: '+e.message)}};
 $('stop').onclick=stop;
-function lumAt(data,w,x,y){let sum=0,n=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){let xx=Math.max(0,Math.min(w-1,Math.round(x+dx))),yy=Math.max(0,Math.min(data.height-1,Math.round(y+dy))),i=(yy*w+xx)*4;sum+=.2126*data.data[i]+.7152*data.data[i+1]+.0722*data.data[i+2];n++}return sum/n}
-function scoreBoard(im,x,y,size){let vals=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++)vals.push(lumAt(im,im.width,x+(c+.5)*size/8,y+(r+.5)*size/8));let contrast=0,alternation=0,n=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){let i=r*8+c;if(c<7){contrast+=Math.abs(vals[i]-vals[i+1]);n++}if(r<7){contrast+=Math.abs(vals[i]-vals[i+8]);n++}alternation+=((r+c)%2? -1:1)*vals[i]}return contrast/n+Math.abs(alternation)/64*.08}
-$('scan').onclick=()=>{if(!video.videoWidth||video.readyState<2){log('No video frame yet. Wait a second and try again.');return}
-const scale=Math.min(1,720/video.videoWidth),w=Math.round(video.videoWidth*scale),h=Math.round(video.videoHeight*scale),c=document.createElement('canvas');c.width=w;c.height=h;const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(video,0,0,w,h);const im=cx.getImageData(0,0,w,h);
-let best=null;const min=Math.floor(Math.min(w,h)*.28),max=Math.floor(Math.min(w,h)*.96);
-for(let size=min;size<=max;size+=Math.max(7,Math.floor(min*.045))){let step=Math.max(8,Math.floor(size*.07));for(let y=0;y+size<=h;y+=step)for(let x=0;x+size<=w;x+=step){let s=scoreBoard(im,x,y,size);if(!best||s>best.score)best={x,y,size,score:s}}}
-if(!best||best.score<12){detected=null;$('detect').textContent='No clear board found';$('pieces').textContent='Not recognized';$('analysis').innerHTML='<h3>NO BOARD FOUND</h3><div class="muted">Try sharing only the game window, zooming in on the board, or using a board with clearly alternating square colors.</div>';ctx.clearRect(0,0,overlay.width,overlay.height);log('No strong checkerboard pattern found.');return}
-detected={x:best.x/scale,y:best.y/scale,size:best.size/scale};overlay.width=video.videoWidth;overlay.height=video.videoHeight;ctx.clearRect(0,0,overlay.width,overlay.height);ctx.strokeStyle='#83e0bd';ctx.lineWidth=Math.max(3,video.videoWidth/450);ctx.strokeRect(detected.x,detected.y,detected.size,detected.size);ctx.fillStyle='#83e0bd';ctx.font='bold '+Math.max(16,video.videoWidth/55)+'px Arial';ctx.fillText('POSSIBLE CHESSBOARD',detected.x,Math.max(22,detected.y-10));$('detect').textContent='Likely board found';$('pieces').textContent='Not recognized';$('state').textContent='BOARD LOCATED';$('analysis').innerHTML='<h3>BOARD REGION FOUND</h3><div class="muted">A checkerboard-like region was detected. The green outline shows the estimated board boundary. Piece recognition is the next development step.</div><p style="color:#83e0bd;font-size:12px">Detection score: '+best.score.toFixed(1)+'</p>';log('Likely board found at '+Math.round(detected.x)+', '+Math.round(detected.y)+' · size '+Math.round(detected.size)+' px.');};
+function scoreBoard(gray,w,h,x,y,size){
+ const values=new Float32Array(64);let even=0,odd=0,ne=0,no=0;
+ for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+  const px=Math.max(0,Math.min(w-1,Math.round(x+(c+.5)*size/8)));
+  const py=Math.max(0,Math.min(h-1,Math.round(y+(r+.5)*size/8)));
+  const v=gray[py*w+px];values[r*8+c]=v;
+  if((r+c)%2){odd+=v;no++}else{even+=v;ne++}
+ }
+ let edge=0,n=0;
+ for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+  const i=r*8+c;
+  if(c<7){edge+=Math.abs(values[i]-values[i+1]);n++}
+  if(r<7){edge+=Math.abs(values[i]-values[i+8]);n++}
+ }
+ const checker=Math.abs(even/ne-odd/no);
+ return edge/n+checker*.55;
+}
+$('scan').onclick=()=>{
+ if(!video.videoWidth||video.readyState<2){log('Video is not ready yet. Wait a moment and scan again.');return}
+ $('detect').textContent='Scanning…';$('analysis').innerHTML='<h3>SCANNING</h3><div class="muted">Checking the shared frame for an 8×8 pattern…</div>';
+ requestAnimationFrame(()=>{
+  try{
+   const scale=Math.min(1,560/video.videoWidth),w=Math.max(1,Math.round(video.videoWidth*scale)),h=Math.max(1,Math.round(video.videoHeight*scale));
+   const c=document.createElement('canvas');c.width=w;c.height=h;
+   const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(video,0,0,w,h);
+   const rgba=cx.getImageData(0,0,w,h).data,gray=new Uint8Array(w*h);
+   for(let i=0,j=0;i<gray.length;i++,j+=4)gray[i]=Math.round(.2126*rgba[j]+.7152*rgba[j+1]+.0722*rgba[j+2]);
+   let best=null;const min=Math.max(72,Math.floor(Math.min(w,h)*.27)),max=Math.floor(Math.min(w,h)*.96);
+   const sizeStep=Math.max(4,Math.floor(min*.035));
+   for(let size=min;size<=max;size+=sizeStep){
+    const posStep=Math.max(6,Math.floor(size*.075));
+    for(let y=0;y+size<=h;y+=posStep)for(let x=0;x+size<=w;x+=posStep){
+     const score=scoreBoard(gray,w,h,x,y,size);
+     if(!best||score>best.score)best={x,y,size,score};
+    }
+   }
+   if(best){
+    const ss=Math.max(2,Math.floor(sizeStep/3)),ps=Math.max(2,Math.floor(best.size*.025));
+    const base={...best};
+    for(let size=Math.max(min,base.size-sizeStep);size<=Math.min(max,base.size+sizeStep);size+=ss){
+     for(let y=Math.max(0,base.y-ps);y+size<=h&&y<=base.y+ps;y+=ps)
+      for(let x=Math.max(0,base.x-ps);x+size<=w&&x<=base.x+ps;x+=ps){
+       const score=scoreBoard(gray,w,h,x,y,size);
+       if(score>best.score)best={x,y,size,score};
+      }
+    }
+   }
+   if(!best||best.score<17){
+    detected=null;$('detect').textContent='No clear board found';$('pieces').textContent='Not recognized';
+    $('analysis').innerHTML='<h3>NO BOARD FOUND</h3><div class="muted">Make the chessboard larger, share only the game window, and try again. Boards with unusual colors or perspective may not be detected.</div>';
+    ctx.clearRect(0,0,overlay.width,overlay.height);log('No clear 8×8 checkerboard pattern found. Score: '+(best?best.score.toFixed(1):'none'));return;
+   }
+   detected={x:best.x/scale,y:best.y/scale,size:best.size/scale};
+   overlay.width=video.videoWidth;overlay.height=video.videoHeight;ctx.clearRect(0,0,overlay.width,overlay.height);
+   ctx.strokeStyle='#83e0bd';ctx.lineWidth=Math.max(3,video.videoWidth/450);ctx.strokeRect(detected.x,detected.y,detected.size,detected.size);
+   ctx.fillStyle='#83e0bd';ctx.font='bold '+Math.max(16,video.videoWidth/55)+'px Arial';ctx.fillText('POSSIBLE CHESSBOARD',detected.x,Math.max(22,detected.y-10));
+   $('detect').textContent='Likely board found';$('pieces').textContent='Not recognized';$('state').textContent='BOARD LOCATED';
+   $('analysis').innerHTML='<h3>BOARD REGION FOUND</h3><div class="muted">The green outline marks the estimated board. This is pattern detection only; it does not identify pieces yet.</div><p style="color:#83e0bd;font-size:12px">Pattern score: '+best.score.toFixed(1)+'</p>';
+   log('Possible board found · '+Math.round(detected.size)+' px wide · score '+best.score.toFixed(1));
+  }catch(e){$('detect').textContent='Scan error';$('analysis').innerHTML='<h3>SCAN ERROR</h3><div class="muted">The frame could not be analyzed. Stop sharing, share again, and retry.</div>';log('Scan error: '+e.message)}
+ });
+};
 $('clear').onclick=()=>{ctx.clearRect(0,0,overlay.width,overlay.height);detected=null;$('detect').textContent='Not scanned';$('pieces').textContent='Not recognized';$('analysis').innerHTML='<h3>SCAN CLEARED</h3><div class="muted">Press Scan for board to try again.</div>';log('Scan overlay cleared.')};
 </script></body></html>
