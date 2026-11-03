@@ -1,87 +1,93 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090d12"><title>KNIGHT — Vision</title>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b1015"><title>KNIGHT — Chess Vision</title>
 <style>
-:root{color-scheme:dark;--bg:#090d12;--line:#24313d;--muted:#82909d;--mint:#83e0bd;--white:#edf3f5}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1b3032,transparent 45%),var(--bg);color:var(--white);font:14px/1.5 Inter,system-ui,Arial}header{height:70px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,5vw);background:#090d12ee}.brand{font-size:18px;font-weight:850;letter-spacing:.19em}.brand i{color:var(--mint);font-style:normal}.tag,.muted{color:var(--muted)}.tag{font-size:11px;letter-spacing:.12em}main{max-width:1160px;margin:42px auto;padding:0 22px}.eyebrow{color:var(--mint);font-size:10px;font-weight:800;letter-spacing:.18em}h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.04em;line-height:1.1;margin:8px 0}.desc{color:var(--muted);max-width:600px;margin-bottom:24px}.layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.8fr);gap:18px}.card{background:linear-gradient(145deg,#141f29,#0f171f);border:1px solid var(--line);border-radius:17px;padding:19px;box-shadow:0 18px 55px #0003}.cardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.cardhead strong{font-size:12px;letter-spacing:.12em}.pill{border:1px solid #29473f;color:var(--mint);border-radius:99px;padding:5px 9px;font-size:10px;letter-spacing:.08em}.screen{aspect-ratio:16/9;background:#080d12;border:1px solid #26333d;border-radius:11px;overflow:hidden;display:grid;place-items:center;position:relative}.screen video{width:100%;height:100%;object-fit:contain;display:none}.screen canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}.empty{text-align:center;padding:20px}.empty .symbol{font-size:32px;color:var(--mint)}.empty p{color:var(--muted);max-width:300px;margin:4px auto 0}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:9px;padding:11px 15px;font:700 12px inherit;cursor:pointer;background:var(--mint);color:#07130f}button:hover{filter:brightness(1.08)}button:disabled{opacity:.4;cursor:not-allowed}.ghost{background:#202d38;color:#e4edf0;border:1px solid #34424e}.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.stat{background:#0b1219;border:1px solid #202c36;border-radius:10px;padding:12px}.stat label{display:block;color:var(--muted);font-size:10px;letter-spacing:.1em}.stat b{display:block;font-size:14px;margin-top:3px}.notice{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6}.analysis{background:#0a1118;border:1px solid #202c36;border-radius:11px;padding:15px;min-height:126px}.analysis h3{margin:0 0 8px;font-size:12px;letter-spacing:.1em}.log{max-height:180px;overflow:auto;color:#aab8c1;font:11px/1.8 ui-monospace,monospace;white-space:pre-wrap}.foot{color:#596873;text-align:center;padding:28px 10px;font-size:10px;letter-spacing:.1em}@media(max-width:800px){.layout{grid-template-columns:1fr}.tag{display:none}}
-</style></head><body>
-<header><div class="brand">KNIGHT<i>.</i></div><div class="tag">CHESS INTELLIGENCE / BROWSER EDITION</div></header>
-<main><div class="eyebrow">VISION SYSTEM / 02</div><h1>Find the board.<br>Fast and locally.</h1><div class="desc">Share the window containing your chess game, then scan. This version uses a lightweight image pass instead of repeatedly reading thousands of tiny screen regions.</div>
-<div class="layout"><section class="card"><div class="cardhead"><strong>LIVE SCREEN</strong><span class="pill" id="state">NOT CONNECTED</span></div>
-<div class="screen"><video id="video" autoplay muted playsinline></video><canvas id="overlay"></canvas><div class="empty" id="empty"><div class="symbol">⌗</div><b>Screen capture is off</b><p>Share the window or screen where your chess game is open.</p></div></div>
-<div class="actions"><button id="share">Share screen</button><button class="ghost" id="scan" disabled>Scan for board</button><button class="ghost" id="stop" disabled>Stop</button></div>
-<div class="statgrid"><div class="stat"><label>BOARD DETECTION</label><b id="detect">Waiting for screen</b></div><div class="stat"><label>PIECE RECOGNITION</label><b id="pieces">Not available</b></div></div>
-<p class="notice">Screen frames are analyzed locally in this tab. Board detection is experimental; this scanner finds a likely 8×8 checkerboard, not the individual chess pieces.</p></section>
-<aside class="card"><div class="cardhead"><strong>SCAN RESULTS</strong><span class="pill">LOCAL VISION</span></div><div class="analysis" id="analysis"><h3>READY</h3><div class="muted">Connect your screen and press Scan for board.</div></div>
-<div class="actions"><button class="ghost" id="clear">Clear scan</button></div>
-<div style="margin-top:19px"><div class="cardhead"><strong>SYSTEM LOG</strong><span class="muted">LOCAL</span></div><div class="log" id="log">[system] KNIGHT Vision initialized.\n[fix] Fast single-frame board scan loaded.\n[privacy] Frames stay in this browser tab.</div></div>
-<p class="notice">Automatic piece recognition and move analysis are not implemented yet. A detected outline is not a verified chess position.</p></aside></div></main><div class="foot">KNIGHT VISION · BROWSER EDITION</div>
+:root{color-scheme:dark;--bg:#0b1015;--panel:#121a22;--panel2:#0e151c;--line:#263541;--text:#edf4f5;--muted:#8999a5;--mint:#8ce4c2;--red:#ff9a91}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.55 Inter,system-ui,Arial,sans-serif}
+header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(20px,5vw)}
+.logo{font-size:18px;font-weight:900;letter-spacing:.2em}.logo span{color:var(--mint)}.topnote{font-size:10px;color:var(--muted);letter-spacing:.15em}
+main{max-width:1160px;margin:42px auto;padding:0 22px}.kicker{font-size:10px;color:var(--mint);letter-spacing:.2em;font-weight:800}h1{font-size:clamp(30px,5vw,48px);line-height:1.05;letter-spacing:-.05em;margin:10px 0}.intro{color:var(--muted);max-width:650px;margin:0 0 26px}
+.grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.8fr);gap:16px}.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}.panelhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.panelhead b{font-size:11px;letter-spacing:.13em}.status{font-size:10px;color:var(--mint);border:1px solid #315447;border-radius:99px;padding:5px 9px}
+.preview{width:100%;aspect-ratio:16/9;background:#080d12;border:1px solid var(--line);border-radius:10px;overflow:hidden;display:grid;place-items:center;position:relative}.preview canvas{width:100%;height:100%;object-fit:contain;display:none}.placeholder{text-align:center;color:var(--muted);padding:18px}.placeholder strong{display:block;color:var(--text);font-size:14px;margin:8px 0 3px}.glyph{font-size:30px;color:var(--mint)}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+button{border:1px solid transparent;border-radius:9px;padding:11px 15px;background:var(--mint);color:#08130f;font-size:12px;font-weight:800;cursor:pointer}button:hover{filter:brightness(1.08)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#202d38;color:var(--text);border-color:#344450}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.metric{background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:11px}.metric small{display:block;color:var(--muted);font-size:9px;letter-spacing:.13em}.metric b{display:block;font-size:13px;margin-top:4px}
+.result{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:14px;min-height:120px}.result h2{font-size:12px;letter-spacing:.1em;margin:0 0 7px}.result p{margin:0;color:var(--muted);font-size:12px}.log{font:11px/1.7 ui-monospace,monospace;color:#a9b7c0;white-space:pre-wrap;max-height:190px;overflow:auto;margin-top:12px}.note{font-size:11px;color:var(--muted);margin:12px 0 0}.warn{color:#d5b58a}.footer{text-align:center;color:#62717b;font-size:10px;letter-spacing:.12em;padding:30px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.topnote{display:none}main{margin:28px auto}}
+</style></head>
+<body>
+<header><div class="logo">KNIGHT<span>.</span></div><div class="topnote">CHESS VISION WORKSPACE</div></header>
+<main><div class="kicker">VISION / WORKSPACE 01</div><h1>See the board.<br>Understand the position.</h1><p class="intro">Share the window that contains your chessboard. KNIGHT will inspect the shared frame locally and look for a square 8×8 board pattern.</p>
+<div class="grid">
+<section class="panel"><div class="panelhead"><b>SCREEN PREVIEW</b><span class="status" id="status">DISCONNECTED</span></div>
+<div class="preview"><canvas id="preview"></canvas><div class="placeholder" id="placeholder"><div class="glyph">▦</div><strong>Nothing shared yet</strong><span>Choose your chess game when the browser asks what to share.</span></div></div>
+<div class="actions"><button id="share">Share screen</button><button class="secondary" id="scan" disabled>Scan board</button><button class="secondary" id="stop" disabled>Stop sharing</button></div>
+<div class="metrics"><div class="metric"><small>BOARD STATUS</small><b id="boardStatus">Waiting for screen</b></div><div class="metric"><small>PIECE READING</small><b>Not built yet</b></div></div>
+<p class="note">Privacy: frames are processed inside this browser tab. The current build detects board-like patterns only; it does not identify pieces or recommend moves yet.</p>
+</section>
+<aside class="panel"><div class="panelhead"><b>DETECTION</b><span class="status">LOCAL PROCESSING</span></div>
+<div class="result" id="result"><h2>READY</h2><p>Share your chess window, then select Scan board.</p></div>
+<div class="actions"><button class="secondary" id="clear">Clear result</button></div>
+<div class="panelhead" style="margin-top:22px"><b>ACTIVITY</b><span style="font-size:10px;color:var(--muted)">LIVE LOG</span></div><div class="log" id="log">[system] KNIGHT initialized.
+[system] Waiting for screen permission.</div>
+<p class="note warn">A green box means a possible board was found, not that the position has been understood.</p>
+</aside></div></main><div class="footer">KNIGHT · BUILT FOR THE BROWSER</div>
+<video id="source" autoplay muted playsinline style="display:none"></video>
 <script>
-const $=id=>document.getElementById(id),video=$('video'),overlay=$('overlay'),ctx=overlay.getContext('2d');
-let stream=null,detected=null;
-function log(s){$('log').textContent+='\n['+new Date().toLocaleTimeString()+'] '+s;$('log').scrollTop=$('log').scrollHeight}
-function stop(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;video.style.display='none';$('empty').style.display='block';$('state').textContent='NOT CONNECTED';$('scan').disabled=true;$('stop').disabled=true;ctx.clearRect(0,0,overlay.width,overlay.height);$('detect').textContent='Waiting for screen';$('pieces').textContent='Not available';detected=null;log('Screen capture stopped.')}
-$('share').onclick=async()=>{try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:10},audio:false});video.srcObject=stream;await video.play();video.style.display='block';$('empty').style.display='none';$('state').textContent='SCREEN CONNECTED';$('stop').disabled=false;$('scan').disabled=false;stream.getVideoTracks()[0].addEventListener('ended',stop);log('Screen connected. Press Scan for board.')}catch(e){log('Share error: '+e.message)}};
-$('stop').onclick=stop;
-function scoreBoard(gray,w,h,x,y,size){
- const values=new Float32Array(64);let even=0,odd=0,ne=0,no=0;
- for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-  const px=Math.max(0,Math.min(w-1,Math.round(x+(c+.5)*size/8)));
-  const py=Math.max(0,Math.min(h-1,Math.round(y+(r+.5)*size/8)));
-  const v=gray[py*w+px];values[r*8+c]=v;
-  if((r+c)%2){odd+=v;no++}else{even+=v;ne++}
- }
- let edge=0,n=0;
- for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-  const i=r*8+c;
-  if(c<7){edge+=Math.abs(values[i]-values[i+1]);n++}
-  if(r<7){edge+=Math.abs(values[i]-values[i+8]);n++}
- }
- const checker=Math.abs(even/ne-odd/no);
- return edge/n+checker*.55;
+const el=id=>document.getElementById(id),video=el('source'),canvas=el('preview'),view=canvas.getContext('2d');
+let stream=null,lastRect=null,busy=false;
+function log(message){el('log').textContent+='\n['+new Date().toLocaleTimeString()+'] '+message;el('log').scrollTop=el('log').scrollHeight}
+function setResult(title,message){el('result').innerHTML='<h2>'+title+'</h2><p>'+message+'</p>'}
+function clearOverlay(){lastRect=null;if(canvas.width&&canvas.height)view.clearRect(0,0,canvas.width,canvas.height)}
+function drawPreview(){
+ if(!stream||video.readyState<2)return;
+ const w=video.videoWidth,h=video.videoHeight;if(!w||!h)return;
+ if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
+ view.drawImage(video,0,0,w,h);
+ if(lastRect){view.save();view.strokeStyle='#8ce4c2';view.lineWidth=Math.max(3,w/500);view.strokeRect(lastRect.x,lastRect.y,lastRect.size,lastRect.size);view.fillStyle='#8ce4c2';view.font='bold '+Math.max(15,w/55)+'px system-ui';view.fillText('POSSIBLE BOARD',lastRect.x,Math.max(20,lastRect.y-8));view.restore()}
+ requestAnimationFrame(drawPreview)
 }
-$('scan').onclick=()=>{
- if(!video.videoWidth||video.readyState<2){log('Video is not ready yet. Wait a moment and scan again.');return}
- $('detect').textContent='Scanning…';$('analysis').innerHTML='<h3>SCANNING</h3><div class="muted">Checking the shared frame for an 8×8 pattern…</div>';
- requestAnimationFrame(()=>{
-  try{
-   const scale=Math.min(1,560/video.videoWidth),w=Math.max(1,Math.round(video.videoWidth*scale)),h=Math.max(1,Math.round(video.videoHeight*scale));
-   const c=document.createElement('canvas');c.width=w;c.height=h;
-   const cx=c.getContext('2d',{willReadFrequently:true});cx.drawImage(video,0,0,w,h);
-   const rgba=cx.getImageData(0,0,w,h).data,gray=new Uint8Array(w*h);
-   for(let i=0,j=0;i<gray.length;i++,j+=4)gray[i]=Math.round(.2126*rgba[j]+.7152*rgba[j+1]+.0722*rgba[j+2]);
-   let best=null;const min=Math.max(72,Math.floor(Math.min(w,h)*.27)),max=Math.floor(Math.min(w,h)*.96);
-   const sizeStep=Math.max(4,Math.floor(min*.035));
-   for(let size=min;size<=max;size+=sizeStep){
-    const posStep=Math.max(6,Math.floor(size*.075));
-    for(let y=0;y+size<=h;y+=posStep)for(let x=0;x+size<=w;x+=posStep){
-     const score=scoreBoard(gray,w,h,x,y,size);
-     if(!best||score>best.score)best={x,y,size,score};
-    }
-   }
-   if(best){
-    const ss=Math.max(2,Math.floor(sizeStep/3)),ps=Math.max(2,Math.floor(best.size*.025));
-    const base={...best};
-    for(let size=Math.max(min,base.size-sizeStep);size<=Math.min(max,base.size+sizeStep);size+=ss){
-     for(let y=Math.max(0,base.y-ps);y+size<=h&&y<=base.y+ps;y+=ps)
-      for(let x=Math.max(0,base.x-ps);x+size<=w&&x<=base.x+ps;x+=ps){
-       const score=scoreBoard(gray,w,h,x,y,size);
-       if(score>best.score)best={x,y,size,score};
-      }
-    }
-   }
-   if(!best||best.score<17){
-    detected=null;$('detect').textContent='No clear board found';$('pieces').textContent='Not recognized';
-    $('analysis').innerHTML='<h3>NO BOARD FOUND</h3><div class="muted">Make the chessboard larger, share only the game window, and try again. Boards with unusual colors or perspective may not be detected.</div>';
-    ctx.clearRect(0,0,overlay.width,overlay.height);log('No clear 8×8 checkerboard pattern found. Score: '+(best?best.score.toFixed(1):'none'));return;
-   }
-   detected={x:best.x/scale,y:best.y/scale,size:best.size/scale};
-   overlay.width=video.videoWidth;overlay.height=video.videoHeight;ctx.clearRect(0,0,overlay.width,overlay.height);
-   ctx.strokeStyle='#83e0bd';ctx.lineWidth=Math.max(3,video.videoWidth/450);ctx.strokeRect(detected.x,detected.y,detected.size,detected.size);
-   ctx.fillStyle='#83e0bd';ctx.font='bold '+Math.max(16,video.videoWidth/55)+'px Arial';ctx.fillText('POSSIBLE CHESSBOARD',detected.x,Math.max(22,detected.y-10));
-   $('detect').textContent='Likely board found';$('pieces').textContent='Not recognized';$('state').textContent='BOARD LOCATED';
-   $('analysis').innerHTML='<h3>BOARD REGION FOUND</h3><div class="muted">The green outline marks the estimated board. This is pattern detection only; it does not identify pieces yet.</div><p style="color:#83e0bd;font-size:12px">Pattern score: '+best.score.toFixed(1)+'</p>';
-   log('Possible board found · '+Math.round(detected.size)+' px wide · score '+best.score.toFixed(1));
-  }catch(e){$('detect').textContent='Scan error';$('analysis').innerHTML='<h3>SCAN ERROR</h3><div class="muted">The frame could not be analyzed. Stop sharing, share again, and retry.</div>';log('Scan error: '+e.message)}
- });
+el('share').onclick=async()=>{
+ if(!navigator.mediaDevices?.getDisplayMedia){setResult('NOT SUPPORTED','Use a modern desktop browser such as Chrome, Edge, or Firefox. Screen capture needs a secure browser context.');return}
+ try{
+  stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:8},audio:false});
+  video.srcObject=stream;await video.play();el('placeholder').style.display='none';canvas.style.display='block';el('status').textContent='SCREEN CONNECTED';el('boardStatus').textContent='Ready to scan';el('scan').disabled=false;el('stop').disabled=false;
+  stream.getVideoTracks()[0].addEventListener('ended',stopSharing);requestAnimationFrame(drawPreview);setResult('SCREEN CONNECTED','Screen sharing is active. Press Scan board when the chessboard is visible.');log('Screen capture started: '+video.videoWidth+'×'+video.videoHeight);
+ }catch(error){log('Share failed: '+error.message);setResult('SHARE CANCELLED','Screen sharing was not started. Press Share screen and choose a window.')}
 };
-$('clear').onclick=()=>{ctx.clearRect(0,0,overlay.width,overlay.height);detected=null;$('detect').textContent='Not scanned';$('pieces').textContent='Not recognized';$('analysis').innerHTML='<h3>SCAN CLEARED</h3><div class="muted">Press Scan for board to try again.</div>';log('Scan overlay cleared.')};
+function stopSharing(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;canvas.style.display='none';el('placeholder').style.display='block';el('status').textContent='DISCONNECTED';el('boardStatus').textContent='Waiting for screen';el('scan').disabled=true;el('stop').disabled=true;clearOverlay();log('Screen sharing stopped.')}
+el('stop').onclick=stopSharing;
+function samplePatch(gray,w,h,x,y,size){
+ let sum=0,n=0;const startX=Math.round(x+size*.27),endX=Math.round(x+size*.73),startY=Math.round(y+size*.27),endY=Math.round(y+size*.73);
+ for(let yy=startY;yy<=endY;yy+=Math.max(2,Math.floor(size/24)))for(let xx=startX;xx<=endX;xx+=Math.max(2,Math.floor(size/24))){sum+=gray[Math.min(h-1,yy)*w+Math.min(w-1,xx)];n++}
+ return sum/n;
+}
+function candidateScore(gray,w,h,x,y,size){
+ const v=new Float32Array(64);let light=0,dark=0,nl=0,nd=0,adj=0,na=0;
+ for(let r=0;r<8;r++)for(let c=0;c<8;c++){const z=samplePatch(gray,w,h,x+c*size/8,y+r*size/8,size/8);v[r*8+c]=z;if((r+c)%2){dark+=z;nd++}else{light+=z;nl++}}
+ for(let r=0;r<8;r++)for(let c=0;c<8;c++){const i=r*8+c;if(c<7){adj+=Math.abs(v[i]-v[i+1]);na++}if(r<7){adj+=Math.abs(v[i]-v[i+8]);na++}}
+ const parity=Math.abs(light/nl-dark/nd);
+ return adj/na*.65+parity*.75;
+}
+function scan(){
+ if(busy||!stream||video.readyState<2)return;
+ busy=true;el('boardStatus').textContent='Scanning…';setResult('SCANNING','Analyzing one reduced frame. This should take a moment.');
+ setTimeout(()=>{
+ try{
+  const scale=Math.min(1,480/video.videoWidth),w=Math.max(1,Math.round(video.videoWidth*scale)),h=Math.max(1,Math.round(video.videoHeight*scale));
+  const work=document.createElement('canvas');work.width=w;work.height=h;const c=work.getContext('2d',{willReadFrequently:true});c.drawImage(video,0,0,w,h);
+  const pixels=c.getImageData(0,0,w,h).data,gray=new Uint8Array(w*h);
+  for(let p=0,j=0;p<gray.length;p++,j+=4)gray[p]=((pixels[j]*77+pixels[j+1]*150+pixels[j+2]*29)>>8);
+  let best=null;const min=Math.max(64,Math.floor(Math.min(w,h)*.28)),max=Math.floor(Math.min(w,h)*.94);
+  const sizes=[];for(let s=min;s<=max;s+=Math.max(5,Math.floor(min*.045)))sizes.push(s);
+  for(const size of sizes){const step=Math.max(7,Math.floor(size*.065));for(let y=0;y+size<=h;y+=step)for(let x=0;x+size<=w;x+=step){const score=candidateScore(gray,w,h,x,y,size);if(!best||score>best.score)best={x,y,size,score}}}
+  if(!best||best.score<13){clearOverlay();el('boardStatus').textContent='No board found';setResult('NO BOARD DETECTED','Try sharing only the game window and make the board fill more of it. This experimental detector may miss some board themes.');log('No convincing board pattern. Best score: '+(best?best.score.toFixed(1):'none'));return}
+  lastRect={x:best.x/scale,y:best.y/scale,size:best.size/scale};el('boardStatus').textContent='Possible board found';setResult('POSSIBLE BOARD FOUND','A square 8×8 pattern was detected and outlined in green. This is not yet piece recognition. Confidence score: '+best.score.toFixed(1)+'.');log('Possible board detected; score '+best.score.toFixed(1)+', width '+Math.round(lastRect.size)+' px.');
+ }catch(error){el('boardStatus').textContent='Scan failed';setResult('SCAN ERROR','The frame could not be analyzed. Stop sharing, share again, and retry.');log('Scan error: '+error.message)}
+ finally{busy=false}
+ },30);
+}
+el('scan').onclick=scan;
+el('clear').onclick=()=>{clearOverlay();el('boardStatus').textContent=stream?'Ready to scan':'Waiting for screen';setResult('CLEARED','The previous detection has been removed.');log('Detection cleared.')};
 </script></body></html>
