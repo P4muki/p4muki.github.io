@@ -1,4 +1,14 @@
-name = "Ali"
-
-if name == "Ali":
-    print("HI")
+<!DOCTYPE html>
+<html>
+<body>
+  <button id="start">Share screen</button>
+  <br>
+  <video id="v" autoplay muted style="max-width:100%"></video>
+  <script>
+    document.getElementById("start").onclick = async () => {
+      const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      document.getElementById("v").srcObject = stream;
+    };
+  </script>
+</body>
+</html>
