@@ -1,159 +1,74 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KNIGHT — Chess Vision</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#090d12">
+<title>KNIGHT — Vision</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#090d14;color:#e9efff;font-family:Inter,Arial,sans-serif}
-header{height:75px;border-bottom:1px solid #202b3c;display:flex;align-items:center;padding:0 7%;justify-content:space-between}
-.logo{font-size:23px;font-weight:900;letter-spacing:3px}
-.logo span{color:#62e6bd}
-.status{color:#62e6bd;font-size:12px}
-main{max-width:1050px;margin:45px auto;padding:20px;display:grid;grid-template-columns:minmax(280px,560px) minmax(250px,1fr);gap:35px}
-h1{font-size:32px;margin:0 0 8px}
-.sub{color:#8794aa;margin-bottom:25px}
-.board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;border:5px solid #202b3c;border-radius:9px;overflow:hidden}
-.square{display:flex;align-items:center;justify-content:center;font-size:clamp(24px,5vw,55px);cursor:pointer;position:relative;user-select:none}
-.light{background:#dce5df}.dark{background:#628b7d}
-.selected{outline:4px solid #ffe16a;outline-offset:-4px}
-.target:after{content:"";width:22%;height:22%;border-radius:50%;background:#142c2780;position:absolute}
-.panel{background:#111a28;border:1px solid #25344a;border-radius:15px;padding:22px}
-.panel h2{font-size:17px;margin:0 0 18px}
-button{background:#62e6bd;color:#08130f;border:0;padding:13px 17px;border-radius:8px;font-weight:800;cursor:pointer}
-button:hover{filter:brightness(1.1)}
-.secondary{background:#243449;color:white}
-.controls{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}
-.result{margin-top:18px;padding:16px;background:#0b1320;border-radius:10px;min-height:100px}
-.big{font-size:25px;font-weight:800;color:#62e6bd}
-.muted{color:#91a0b6;font-size:13px;line-height:1.6}
-input{width:100%;background:#0a111c;color:white;border:1px solid #34445b;padding:12px;border-radius:8px;margin:8px 0}
-.moves{color:#aebbd0;line-height:1.8;word-break:break-word}
-footer{text-align:center;color:#65748a;padding:20px;font-size:12px}
-@media(max-width:750px){main{grid-template-columns:1fr;margin:15px auto;gap:20px}}
-</style>
-</head>
+:root{color-scheme:dark;--bg:#090d12;--panel:#111922;--line:#24313d;--muted:#82909d;--mint:#83e0bd;--white:#edf3f5}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1b3032 0,transparent 45%),var(--bg);color:var(--white);font:14px/1.5 Inter,ui-sans-serif,system-ui,Arial}
+header{height:70px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,5vw);position:sticky;top:0;background:#090d12eF;backdrop-filter:blur(14px);z-index:3}
+.brand{font-size:18px;font-weight:850;letter-spacing:.19em}.brand i{color:var(--mint);font-style:normal}.tag{color:var(--muted);font-size:11px;letter-spacing:.12em}
+main{max-width:1160px;margin:42px auto;padding:0 22px}.intro{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:24px}.eyebrow{color:var(--mint);font-size:10px;font-weight:800;letter-spacing:.18em}h1{font-size:clamp(28px,4vw,42px);letter-spacing:-.04em;line-height:1.1;margin:8px 0}.desc{color:var(--muted);max-width:570px}
+.layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.8fr);gap:18px}.card{background:linear-gradient(145deg,#141f29,#0f171f);border:1px solid var(--line);border-radius:17px;padding:19px;box-shadow:0 18px 55px #0003}.cardhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.cardhead strong{font-size:12px;letter-spacing:.12em}.pill{border:1px solid #29473f;color:var(--mint);border-radius:99px;padding:5px 9px;font-size:10px;letter-spacing:.08em}
+.screen{aspect-ratio:16/9;background:#080d12;border:1px solid #26333d;border-radius:11px;overflow:hidden;display:grid;place-items:center;position:relative}.screen video{width:100%;height:100%;object-fit:contain;display:none}.empty{text-align:center;padding:20px}.empty .symbol{font-size:32px;color:var(--mint);margin-bottom:8px}.empty p{color:var(--muted);max-width:300px;margin:4px auto 0}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}button{border:0;border-radius:9px;padding:11px 15px;font:700 12px inherit;cursor:pointer;background:var(--mint);color:#07130f;transition:.15s}button:hover{filter:brightness(1.08);transform:translateY(-1px)}button:disabled{opacity:.4;cursor:not-allowed;transform:none}.ghost{background:#202d38;color:#e4edf0;border:1px solid #34424e}.small{padding:8px 11px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.stat{background:#0b1219;border:1px solid #202c36;border-radius:10px;padding:12px}.stat label{display:block;color:var(--muted);font-size:10px;letter-spacing:.1em}.stat b{display:block;font-size:14px;margin-top:3px}
+.notice{font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6}.analysis{background:#0a1118;border:1px solid #202c36;border-radius:11px;padding:15px;min-height:126px}.analysis h3{margin:0 0 8px;font-size:12px;letter-spacing:.1em}.move{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1e2a34}.move:last-child{border:0}.move b{color:var(--mint);font-size:15px}.muted{color:var(--muted)}.bar{height:7px;background:#25313a;border-radius:20px;overflow:hidden;margin:12px 0}.bar span{display:block;height:100%;width:50%;background:var(--mint);transition:width .3s}.log{max-height:155px;overflow:auto;color:#aab8c1;font:11px/1.8 ui-monospace,monospace;white-space:pre-wrap}.foot{color:#596873;text-align:center;padding:28px 10px;font-size:10px;letter-spacing:.1em}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.intro{display:block}.tag{display:none}} 
+</style></head>
 <body>
-<header>
- <div class="logo">KNIGHT<span>.</span></div>
- <div class="status">● VISION SYSTEM READY</div>
-</header>
+<header><div class="brand">KNIGHT<i>.</i></div><div class="tag">CHESS INTELLIGENCE / BROWSER EDITION</div></header>
 <main>
-<section>
- <h1>Chess Analysis</h1>
- <div class="sub">Your personal chess analysis workspace.</div>
- <div id="board" class="board"></div>
- <div class="controls">
-  <button onclick="analyze()">Analyze position</button>
-  <button class="secondary" onclick="undo()">Undo move</button>
-  <button class="secondary" onclick="reset()">New game</button>
- </div>
+<div class="intro"><div><div class="eyebrow">VISION SYSTEM / 01</div><h1>See the position.<br>Understand the game.</h1><div class="desc">A clean chess analysis workspace. Share a game window, let the vision scanner look for a board, then run engine analysis when a position is available.</div></div></div>
+<div class="layout">
+<section class="card">
+<div class="cardhead"><strong>LIVE SCREEN</strong><span class="pill" id="state">NOT CONNECTED</span></div>
+<div class="screen"><video id="video" autoplay muted playsinline></video><div class="empty" id="empty"><div class="symbol">⌗</div><b>Screen capture is off</b><p>Share the window or screen where your chess game is open.</p></div></div>
+<div class="actions"><button id="share">Share screen</button><button class="ghost" id="scan" disabled>Scan for board</button><button class="ghost" id="stop" disabled>Stop</button></div>
+<div class="statgrid"><div class="stat"><label>BOARD DETECTION</label><b id="detect">Waiting for screen</b></div><div class="stat"><label>PIECE RECOGNITION</label><b id="pieces">Not available</b></div></div>
+<p class="notice">Privacy: screen frames are processed locally in this tab. Nothing is uploaded by the scanner. Automatic board finding is experimental and can fail on unusual themes, animations, or small boards.</p>
 </section>
-<section>
- <div class="panel">
-  <h2>AI ANALYSIS</h2>
-  <div class="muted">Select pieces on the board to make moves, then analyze the position.</div>
-  <div class="result" id="result">
-   <div class="big">READY</div>
-   <p class="muted">Make a move to get started.</p>
-  </div>
-  <h2 style="margin-top:25px">POSITION FEN</h2>
-  <input id="fen" placeholder="Paste a FEN position here">
-  <button class="secondary" onclick="loadFen()">Load FEN</button>
-  <h2 style="margin-top:25px">MOVE HISTORY</h2>
-  <div id="history" class="moves">No moves yet.</div>
- </div>
-</section>
-</main>
-<footer>KNIGHT VISION · CHESS WORKSPACE</footer>
+<aside class="card">
+<div class="cardhead"><strong>ENGINE ANALYSIS</strong><span class="pill">CLOUD EVAL</span></div>
+<div class="analysis" id="analysis"><h3>READY WHEN YOU ARE</h3><div class="muted">First connect a screen and scan for a chessboard. This build does not pretend uncertain piece guesses are a verified position.</div></div>
+<div class="bar"><span id="evalbar"></span></div>
+<div class="actions"><button id="evaluate" disabled>Analyze detected position</button><button class="ghost small" id="copyfen" disabled>Copy FEN</button></div>
+<div style="margin-top:19px"><div class="cardhead"><strong>SYSTEM LOG</strong><span class="muted" id="fps">LOCAL</span></div><div class="log" id="log">[system] KNIGHT Vision initialized.
+[privacy] Local frame processing enabled.
+[engine] Waiting for a valid position.</div></div>
+<p class="notice">A board detector can locate the 8×8 grid, but reliable piece-to-FEN recognition across different chess websites requires a trained chess-piece vision model. This version deliberately keeps that step unverified rather than inventing moves.</p>
+</aside>
+</div></main><div class="foot">KNIGHT VISION · BUILT FOR THE BROWSER</div>
 <script>
-const game = new Chess();
-const board = document.getElementById("board");
-const pieces = {
- w:{k:"♔",q:"♕",r:"♖",b:"♗",n:"♘",p:"♙"},
- b:{k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"}
+const $=id=>document.getElementById(id), video=$('video');
+let stream=null, lastFrame=null, detected=null, raf=0;
+function log(s){$('log').textContent+='\n['+new Date().toLocaleTimeString()+'] '+s;$('log').scrollTop=$('log').scrollHeight}
+$('share').onclick=async()=>{try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:15},audio:false});video.srcObject=stream;video.style.display='block';$('empty').style.display='none';$('state').textContent='SCREEN CONNECTED';$('stop').disabled=false;$('scan').disabled=false;stream.getVideoTracks()[0].addEventListener('ended',stop);log('Screen stream connected. Frames stay in this browser tab.')}catch(e){log('Screen sharing cancelled or unavailable: '+e.message)}};
+function stop(){if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;video.style.display='none';$('empty').style.display='block';$('state').textContent='NOT CONNECTED';$('scan').disabled=true;$('stop').disabled=true;$('detect').textContent='Waiting for screen';$('pieces').textContent='Not available';log('Screen capture stopped.')}
+$('stop').onclick=stop;
+function luminance(r,g,b){return .2126*r+.7152*g+.0722*b}
+function sample(ctx,x,y,w,h){const d=ctx.getImageData(Math.max(0,Math.floor(x)),Math.max(0,Math.floor(y)),Math.max(1,Math.floor(w)),Math.max(1,Math.floor(h))).data;let r=0,g=0,b=0,n=d.length/4;for(let i=0;i<d.length;i+=4){r+=d[i];g+=d[i+1];b+=d[i+2]}return [r/n,g/n,b/n]}
+function boardScore(ctx,x,y,s,size){let colors=[],edges=0,occupied=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){let a=sample(ctx,x+c*s+s*.12,y+r*s+s*.12,s*.76,s*.76);colors.push(a);let center=sample(ctx,x+c*s+s*.3,y+r*s+s*.3,s*.4,s*.4);let corner=sample(ctx,x+c*s+s*.08,y+r*s+s*.08,s*.18,s*.18);let delta=Math.abs(luminance(...center)-luminance(...corner));if(delta>20)occupied++}
+let alt=0,n=0;for(let r=0;r<8;r++)for(let c=0;c<8;c++){let v=luminance(...colors[r*8+c]);if(c<7){alt+=Math.abs(v-luminance(...colors[r*8+c+1]));n++}if(r<7){alt+=Math.abs(v-luminance(...colors[(r+1)*8+c]));n++}}
+return (alt/n)*.7+Math.min(occupied,35)*.25}
+$('scan').onclick=()=>{
+ if(!video.videoWidth){log('Waiting for screen frame.');return}
+ const w=video.videoWidth,h=video.videoHeight,scale=Math.min(1,900/w),cw=Math.round(w*scale),ch=Math.round(h*scale);
+ const can=document.createElement('canvas');can.width=cw;can.height=ch;const ctx=can.getContext('2d',{willReadFrequently:true});ctx.drawImage(video,0,0,cw,ch);
+ let best=null;
+ // Search square candidates at several sizes. Grid contrast is used only to locate a likely board.
+ for(let size=Math.floor(Math.min(cw,ch)*.28);size<=Math.min(cw,ch)*.94;size+=Math.max(5,Math.floor(size*.035))){
+  const step=Math.max(4,Math.floor(size*.045));
+  for(let y=0;y+size<=ch;y+=step)for(let x=0;x+size<=cw;x+=step){
+   const score=boardScore(ctx,x,y,size/8,size);
+   if(!best||score>best.score)best={x,y,size,score};
+  }
+ }
+ if(best&&best.score>9){detected={x:best.x/scale,y:best.y/scale,size:best.size/scale};$('detect').textContent='Likely board found';$('state').textContent='BOARD LOCATED';$('pieces').textContent='Needs vision model';log('Likely 8×8 board region located. Confidence is heuristic, not piece recognition.');drawOverlay(best,scale,cw,ch);}
+ else{$('detect').textContent='No clear board found';$('pieces').textContent='Not available';log('Could not confidently locate an 8×8 board. Try enlarging the game window.')}
 };
-let selected=null;
-let targets=[];
-
-function render(){
- board.innerHTML="";
- const rows=game.board();
- rows.forEach((row,r)=>{
-  row.forEach((piece,c)=>{
-   const sq=String.fromCharCode(97+c)+(8-r);
-   const el=document.createElement("div");
-   el.className="square "+((r+c)%2===0?"light":"dark");
-   if(selected===sq)el.classList.add("selected");
-   if(targets.includes(sq))el.classList.add("target");
-   if(piece){
-    el.textContent=pieces[piece.color][piece.type];
-    el.style.color=piece.color==="w"?"#fff":"#151a20";
-    el.style.textShadow=piece.color==="w"?"0 1px 3px #333":"0 1px 2px #aaa";
-   }
-   el.onclick=()=>clickSquare(sq);
-   board.appendChild(el);
-  });
- });
- document.getElementById("fen").value=game.fen();
- const history=game.history();
- document.getElementById("history").textContent=history.length?history.join("  "):"No moves yet.";
-}
-function clickSquare(sq){
- const piece=game.get(sq);
- if(selected){
-  const move=game.move({from:selected,to:sq,promotion:"q"});
-  if(move){selected=null;targets=[];render();return;}
- }
- if(piece&&piece.color===game.turn()){
-  selected=sq;
-  targets=game.moves({square:sq,verbose:true}).map(m=>m.to);
- }else{selected=null;targets=[];}
- render();
-}
-function undo(){
- game.undo();selected=null;targets=[];render();
-}
-function reset(){
- game.reset();selected=null;targets=[];render();
- document.getElementById("result").innerHTML='<div class="big">READY</div><p class="muted">New game started.</p>';
-}
-function loadFen(){
- const value=document.getElementById("fen").value.trim();
- if(game.load(value)){selected=null;targets=[];render();document.getElementById("result").innerHTML='<div class="big">POSITION LOADED</div><p class="muted">Ready to analyze.</p>';}
- else alert("That FEN position is not valid.");
-}
-async function analyze(){
- const box=document.getElementById("result");
- box.innerHTML='<div class="big">ANALYZING...</div><p class="muted">Checking the current chess position.</p>';
- if(game.game_over()){
-  box.innerHTML='<div class="big">GAME OVER</div><p class="muted">This position has no legal continuation.</p>';
-  return;
- }
- try{
-  const fen=encodeURIComponent(game.fen());
-  const response=await fetch("https://lichess.org/api/cloud-eval?fen="+fen+"&multiPv=3");
-  if(!response.ok)throw new Error("No cloud analysis available");
-  const data=await response.json();
-  const names={};
-  const lines=data.pvs||[];
-  let html='<div class="big">ANALYSIS READY</div>';
-  html+='<p class="muted">Engine depth: '+(data.depth||"?")+'</p>';
-  html+='<h3>Suggested moves</h3>';
-  lines.forEach((line,i)=>{
-   const first=line.moves.split(" ")[0];
-   html+='<p><b>'+(i+1)+'. '+first+'</b> <span class="muted"> · '+(line.cp!==undefined?(line.cp/100).toFixed(2):"Mate")+'</span></p>';
-  });
-  html+='<p class="muted">Evaluation is from White’s perspective. Cloud analysis may not be available for every position.</p>';
-  box.innerHTML=html;
- }catch(e){
-  box.innerHTML='<div class="big">ANALYSIS UNAVAILABLE</div><p class="muted">The online analysis service could not find this position. Check your internet connection or try again later.</p>';
- }
-}
-render();
-</script>
-</body>
-</html>
+function drawOverlay(b,scale,w,h){const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(video,0,0,w,h);x.strokeStyle='#83e0bd';x.lineWidth=3;x.strokeRect(b.x,b.y,b.size,b.size);x.fillStyle='#83e0bd';x.font='bold 14px Arial';x.fillText('POSSIBLE CHESSBOARD',b.x+5,Math.max(18,b.y-8));lastFrame=c.toDataURL('image/png');}
+$('evaluate').onclick=()=>{$('analysis').innerHTML='<h3>POSITION NOT VERIFIED</h3><div class="muted">The scanner has located a possible board, but has not recognized every piece. Engine analysis needs a correct FEN; guessing one could produce misleading moves.</div>';log('Engine analysis skipped: no verified FEN position.');};
+$('copyfen').onclick=()=>{};
+</script></body></html>
