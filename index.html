@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f7f8fa">
+<title>Chess Lens</title>
+<style>
+:root{color-scheme:light;--bg:#f7f8fa;--panel:#fff;--ink:#18202b;--muted:#667085;--line:#e5e9ef;--accent:#2563eb;--green:#16a34a;--gold:#d69e18;--orange:#ea8a24}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1180px;margin:0 auto;padding:28px 20px 50px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:40px;height:40px;border-radius:12px;background:#172033;color:#fff;display:grid;place-items:center;font-size:22px}
+h1{font-size:21px;line-height:1.2;margin:0;letter-spacing:-.5px}header p{margin:3px 0 0;color:var(--muted);font-size:13px}
+.layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(300px,.9fr);gap:18px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 2px 8px #17203308}
+.panel h2{font-size:15px;margin:0 0 14px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+button,select{font:inherit;border:1px solid var(--line);border-radius:9px;padding:9px 12px;background:#fff;color:var(--ink)}
+button{cursor:pointer;font-weight:600}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}button:disabled{opacity:.45;cursor:not-allowed}
+button:hover:not(:disabled){filter:brightness(.97)}
+#stage{position:relative;background:#111;border-radius:12px;overflow:hidden;min-height:180px}
+canvas{display:block;width:100%;height:auto;cursor:crosshair}
+#placeholder{position:absolute;inset:0;display:grid;place-items:center;color:#d5dbe5;text-align:center;padding:24px;pointer-events:none}
+#placeholder strong{display:block;color:#fff;font-size:17px;margin-bottom:5px}
+.status{margin:12px 0 0;padding:10px 12px;border-radius:9px;background:#f1f5f9;color:#475467;font-size:13px}
+.status.good{background:#ecfdf3;color:#067647}.status.warn{background:#fffaeb;color:#93370d}.status.bad{background:#fef3f2;color:#b42318}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:12px;color:var(--muted);font-weight:600}
+select{width:100%;padding:9px}
+.check{display:flex;align-items:center;gap:8px;font-size:13px;color:#475467;margin-top:12px}
+.check input{accent-color:var(--accent)}
+.move-main{font-size:24px;font-weight:700;letter-spacing:-.6px;margin:4px 0}
+.eval{font-size:13px;color:var(--muted);margin-bottom:14px}
+.move-list{display:grid;gap:8px}
+.move{display:flex;align-items:center;justify-content:space-between;padding:10px 11px;border:1px solid var(--line);border-radius:10px}
+.move strong{font-size:15px}.move span{font-size:12px;color:var(--muted)}
+.move .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px}
+.small{font-size:12px;color:var(--muted)}
+#fen{font:11px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-all;background:#f8fafc;border:1px solid var(--line);border-radius:9px;padding:10px;margin-top:12px}
+.footer-note{margin-top:18px;color:var(--muted);font-size:12px}
+@media(max-width:850px){.layout{grid-template-columns:1fr}main{padding:18px 12px 36px}}
+@media(max-width:480px){.controls{grid-template-columns:1fr}.panel{padding:13px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="brand"><div class="logo">♞</div><div><h1>Chess Lens</h1><p>On-screen board reader · Stockfish analysis</p></div></div>
+  <span class="small">Browser-based · GitHub Pages</span>
+</header>
+<div class="layout">
+<section class="panel">
+  <h2>Board capture</h2>
+  <div class="toolbar">
+    <button class="primary" id="share">1 · Share screen</button>
+    <button id="learn" disabled>3 · Learn starting pieces</button>
+    <button id="reset">Reset setup</button>
+  </div>
+  <div id="stage">
+    <canvas id="view" width="960" height="540"></canvas>
+    <div id="placeholder"><div><strong>Share a window to begin</strong>Choose the window containing the chessboard.</div></div>
+  </div>
+  <div id="status" class="status">Step 1: share the game window. Then click the board’s top-left and bottom-right outer corners.</div>
+  <div class="controls">
+    <div class="field"><label for="orientation">Board orientation</label><select id="orientation"><option value="white">White at bottom</option><option value="black">Black at bottom</option></select></div>
+    <div class="field"><label for="turn">Side to move</label><select id="turn"><option value="w">White</option><option value="b">Black</option></select></div>
+    <div class="field"><label for="strength">Engine strength</label><select id="strength"><option value="20">Maximum</option><option value="14">Strong</option><option value="8">Club level</option><option value="3">Beginner</option></select></div>
+    <div class="field"><label for="time">Analysis time</label><select id="time"><option value="700">Fast · 0.7 sec</option><option value="1500" selected>Balanced · 1.5 sec</option><option value="3000">Deeper · 3 sec</option></select></div>
+  </div>
+  <label class="check"><input type="checkbox" id="showLetters"> Show detected pieces on the board</label>
+  <label class="check"><input type="checkbox" id="showAlternatives" checked> Show alternative move arrows</label>
+</section>
+<aside class="panel">
+  <h2>Analysis</h2>
+  <div class="small" id="engineState">Engine not loaded</div>
+  <div class="move-main" id="bestMove">—</div>
+  <div class="eval" id="evaluation">Share a board and learn its starting position to begin.</div>
+  <div class="move-list" id="moves">
+    <div class="move"><strong>Best move</strong><span>Waiting</span></div>
+    <div class="move"><strong>Second choice</strong><span>Waiting</span></div>
+    <div class="move"><strong>Third choice</strong><span>Waiting</span></div>
+  </div>
+  <h2 style="margin-top:20px">Position</h2>
+  <div class="small" id="positionState">No board detected yet.</div>
+  <div id="fen">FEN will appear here.</div>
+  <p class="footer-note">The arrows are drawn on this page, not inside the shared game. Use this for analysis and practice; follow the game’s rules about outside assistance.</p>
+</aside>
+</div>
+<p class="footer-note">Privacy: screen video is processed locally in this browser tab. The engine script is fetched from a public CDN; no Claude API key is used.</p>
+</main>
+<video id="source" autoplay muted playsinline style="display:none"></video>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const video = $("source"), canvas = $("view"), ctx = canvas.getContext("2d");
+const sample = document.createElement("canvas"); sample.width = sample.height = 32;
+const sctx = sample.getContext("2d", {willReadFrequently:true});
+const N=32, COLORS=["#16a34a","#d69e18","#ea8a24","#7c3aed","#0891b2"];
+let stream=null, corners=[], templates={}, thresholds={white:150,black:90};
+let learned=false, engine=null, engineReady=false, searching=false, pendingFen=null;
+let lastFen="", stableFen="", stableCount=0, currentLines={}, currentBest=null, grid=null;
+let lastAnalysisKey="", frameLoop=false, videoReady=false;
+
+function status(message,kind="") { const el=$("status"); el.textContent=message; el.className="status"+(kind?" "+kind:""); }
+function setEngine(message){$("engineState").textContent=message;}
+function boardRect(){
+  if(corners.length!==2)return null;
+  const a=corners[0],b=corners[1],x=Math.min(a.x,b.x),y=Math.min(a.y,b.y);
+  return {x,y,w:Math.abs(b.x-a.x)/8,h:Math.abs(b.y-a.y)/8};
+}
+function screenPoint(e){
+  const r=canvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};
+}
+$("share").addEventListener("click",async()=>{
+  try{
+    stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:15},audio:false});
+    video.srcObject=stream;
+    await video.play();
+    videoReady=true; canvas.width=video.videoWidth; canvas.height=video.videoHeight;
+    $("placeholder").style.display="none"; $("learn").disabled=false;
+    corners=[]; templates={}; learned=false; lastAnalysisKey="";
+    status("Step 2: click the board’s top-left outer corner, then its bottom-right outer corner.");
+    stream.getVideoTracks()[0].addEventListener("ended",()=>{videoReady=false;status("Screen sharing stopped.");});
+    if(!frameLoop){frameLoop=true;drawLoop();}
+    loadEngine();
+  }catch(err){status("Screen sharing was not started: "+err.message,"bad");}
+});
+canvas.addEventListener("click",e=>{
+  if(!videoReady)return;
+  if(corners.length===2){corners=[];templates={};learned=false;lastAnalysisKey="";}
+  corners.push(screenPoint(e));
+  if(corners.length===1)status("Now click the bottom-right outer corner of the board.");
+  else status("Check that the board grid fits exactly. Put the game at its normal starting position, then click “Learn starting pieces”.");
+});
+$("reset").addEventListener("click",()=>{
+  corners=[];templates={};learned=false;grid=null;lastFen="";lastAnalysisKey="";
+  $("fen").textContent="FEN will appear here."; $("positionState").textContent="No board detected yet.";
+  $("bestMove").textContent="—";$("evaluation").textContent="Setup reset.";
+  status("Setup reset. Select the two board corners again.");
+});
+function median(a){if(!a.length)return 0;const b=a.slice().sort((x,y)=>x-y);return b[Math.floor(b.length/2)];}
+function rgbDist(a,b){return Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2]);}
+function sampleSquare(r,f){
+  const R=boardRect();
+  sctx.drawImage(video,R.x+f*R.w,R.y+r*R.h,R.w,R.h,0,0,N,N);
+  const d=sctx.getImageData(0,0,N,N).data;
+  const pts=[[2,2],[N-5,2],[2,N-5],[N-5,N-5]];
+  const bg=pts.map(([x,y])=>{let a=[0,0,0],n=0;for(let yy=y;yy<y+3;yy++)for(let xx=x;xx<x+3;xx++){let i=(yy*N+xx)*4;for(let k=0;k<3;k++)a[k]+=d[i+k];n++;}return a.map(v=>v/n);});
+  let best=bg[0],score=Infinity;
+  for(const c of bg){const s=bg.reduce((v,p)=>v+rgbDist(c,p),0);if(s<score){score=s;best=c;}}
+  return {d,bg:best};
+}
+function silhouette(d,bg){
+  const mask=new Uint8Array(N*N),outside=new Uint8Array(N*N),stack=[];
+  for(let i=0;i<N*N;i++)mask[i]=rgbDist([d[i*4],d[i*4+1],d[i*4+2]],bg)<58?1:0;
+  const seed=p=>{if(mask[p]&&!outside[p]){outside[p]=1;stack.push(p);}};
+  for(let i=0;i<N;i++){seed(i);seed((N-1)*N+i);seed(i*N);seed(i*N+N-1);}
+  while(stack.length){const p=stack.pop(),x=p%N,y=(p/N)|0;for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){const xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=N||yy>=N)continue;const q=yy*N+xx;if(mask[q]&&!outside[q]){outside[q]=1;stack.push(q);}}}
+  const sil=new Uint8Array(N*N);let count=0;
+  for(let i=0;i<N*N;i++){sil[i]=outside[i]?0:1;count+=sil[i];}
+  return {sil,count};
+}
+function centerFill(s){let n=0,v=0;for(let y=8;y<24;y++)for(let x=8;x<24;x++){n++;v+=s[y*N+x];}return v/n;}
+function luminance(d,sil){const a=[];for(let y=8;y<24;y++)for(let x=8;x<24;x++){const i=y*N+x;if(sil[i])a.push(.2126*d[i*4]+.7152*d[i*4+1]+.0722*d[i*4+2]);}return median(a);}
+function match(a,b){
+  let best=Infinity;
+  for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){let diff=0;
+    for(let y=2;y<N-2;y++){const yy=y+dy;if(yy<0||yy>=N)continue;for(let x=2;x<N-2;x++){const xx=x+dx;if(xx<0||xx>=N)continue;if(a[y*N+x]!==b[yy*N+xx])diff++;}}
+    if(diff<best)best=diff;
+  }return best;
+}
+function startPiece(r,f,orientation){
+  const screenWhiteBottom=orientation==="white";
+  const rank=screenWhiteBottom?7-r:r;
+  const file=screenWhiteBottom?f:7-f;
+  if(rank===0||rank===7)return "rnbqkbnr"[file];
+  if(rank===1||rank===6)return "p";
+  return "";
+}
+$("learn").addEventListener("click",()=>{
+  if(!videoReady||corners.length!==2){status("Share the screen and mark both board corners first.","warn");return;}
+  const orientation=$("orientation").value, samples=[];
+  for(let r=0;r<8;r++)for(let f=0;f<8;f++){
+    const s=sampleSquare(r,f),shape=silhouette(s.d,s.bg),expected=startPiece(r,f,orientation);
+    samples.push({r,f,s,shape,expected,lum:luminance(s.d,shape.sil)});
+  }
+  const occupied=samples.filter(x=>x.expected),empty=samples.filter(x=>!x.expected);
+  const badOccupied=occupied.filter(x=>centerFill(x.shape.sil)<.22||x.shape.count>N*N*.86).length;
+  const badEmpty=empty.filter(x=>centerFill(x.shape.sil)>.58).length;
+  if(badOccupied>5||badEmpty>8){status("I can’t confidently see a normal starting position. Check the board corners, zoom, and orientation, then try again.","bad");return;}
+  templates={};
+  for(const type of ["p","r","n","b","q","k"]){
+    const group=samples.filter(x=>x.expected===type);
+    templates[type]=group.map(x=>x.shape.sil);
+  }
+  const whiteLum=samples.filter(x=>x.expected&&((orientation==="white"&&x.r>=6)||(orientation==="black"&&x.r<=1))).map(x=>x.lum);
+  const blackLum=samples.filter(x=>x.expected&&((orientation==="white"&&x.r<=1)||(orientation==="black"&&x.r>=6))).map(x=>x.lum);
+  thresholds.white=median(whiteLum);thresholds.black=median(blackLum);
+  learned=true;lastAnalysisKey="";stableFen="";stableCount=0;
+  status("Piece patterns learned. Keep the board fully visible; the detected letters can be checked using the option below.","good");
+});
+function classify(s){
+  const sh=silhouette(s.d,s.bg);
+  if(centerFill(sh.sil)<.22||sh.count>N*N*.86)return "";
+  let bestType="",bestScore=Infinity;
+  for(const type of Object.keys(templates)){for(const t of templates[type]){const d=match(sh.sil,t);if(d<bestScore){bestScore=d;bestType=type;}}}
+  if(!bestType||bestScore>N*N*.34)return "?";
+  const lum=luminance(s.d,sh.sil),mid=(thresholds.white+thresholds.black)/2;
+  return lum>=mid?bestType.toUpperCase():bestType;
+}
+function readBoard(){
+  const out=[];
+  for(let r=0;r<8;r++){const row=[];for(let f=0;f<8;f++)row.push(classify(sampleSquare(r,f)));out.push(row);}
+  return out;
+}
+function normalize(g){
+  const flip=$("orientation").value==="black",b=[];
+  for(let r=0;r<8;r++){const row=g[flip?7-r:r].slice();if(flip)row.reverse();b.push(row);}
+  return b;
+}
+function makeFen(b,turn){
+  const rows=b.map(row=>{let s="",empty=0;for(const p of row){if(!p)empty++;else{if(empty)s+=empty;empty=0;s+=p;}}if(empty)s+=empty;return s;});
+  let rights="";
+  if(b[7][4]==="K"&&b[7][7]==="R")rights+="K";
+  if(b[7][4]==="K"&&b[7][0]==="R")rights+="Q";
+  if(b[0][4]==="k"&&b[0][7]==="r")rights+="k";
+  if(b[0][4]==="k"&&b[0][0]==="r")rights+="q";
+  return rows.join("/")+" "+turn+" "+(rights||"-")+" - 0 1";
+}
+function valid(b){
+  const all=b.flat(),count=p=>all.filter(x=>x===p).length;
+  if(all.includes("?")||count("K")!==1||count("k")!==1)return false;
+  if(count("P")>8||count("p")>8)return false;
+  if(b[0].some(x=>x==="P"||x==="p")||b[7].some(x=>x==="P"||x==="p"))return false;
+  return true;
+}
+async function loadEngine(){
+  if(engine||!window.Worker)return;
+  setEngine("Loading Stockfish…");
+  try{
+    const url="https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js";
+    const response=await fetch(url);
+    if(!response.ok)throw new Error("CDN returned "+response.status);
+    const code=await response.text();
+    const blob=new Blob([code],{type:"application/javascript"});
+    engine=new Worker(URL.createObjectURL(blob));
+    engine.onmessage=e=>onEngineMessage(typeof e.data==="string"?e.data:"");
+    engine.onerror=()=>{setEngine("Engine failed to start");status("Stockfish could not start. Try refreshing the page or using another browser.","bad");};
+    engine.postMessage("uci");
+  }catch(err){setEngine("Engine unavailable");status("Could not load Stockfish: "+err.message,"bad");}
+}
+function onEngineMessage(line){
+  if(line==="uciok"){engine.postMessage("isready");return;}
+  if(line==="readyok"){engineReady=true;setEngine("Stockfish ready");return;}
+  if(line.startsWith("info")&&line.includes(" pv ")){
+    if(pendingFen)return;
+    const m=line.match(/\bmultipv (\d+)/),score=line.match(/\bscore (cp|mate) (-?\d+)/),depth=line.match(/\bdepth (\d+)/),pv=line.split(" pv ")[1].trim().split(/\s+/);
+    if(score&&pv[0])currentLines[m?+m[1]:1]={move:pv[0],type:score[1],value:+score[2],depth:depth?+depth[1]:0};
+    renderAnalysis();
+  }
+  if(line.startsWith("bestmove")){
+    searching=false;
+    if(pendingFen){const next=pendingFen;pendingFen=null;startSearch(next);}
+    else{currentBest=line.split(/\s+/)[1];renderAnalysis();}
+  }
+}
+function analyze(fen){
+  if(!engineReady)return;
+  currentLines={};currentBest=null;
+  if(searching){pendingFen=fen;engine.postMessage("stop");return;}
+  startSearch(fen);
+}
+function startSearch(fen){
+  searching=true;currentLines={};currentBest=null;
+  engine.postMessage("setoption name MultiPV value 3");
+  engine.postMessage("setoption name Skill Level value "+$("strength").value);
+  engine.postMessage("position fen "+fen);
+  engine.postMessage("go movetime "+$("time").value);
+}
+function scoreText(l){
+  if(!l)return "Evaluation pending";
+  if(l.type==="mate")return "Mate in "+Math.abs(l.value);
+  const score=l.value/100;return (score>0?"+":"")+score.toFixed(2)+" pawns";
+}
+function prettyMove(m){if(!m||m.length<4)return "—";return m.slice(0,2)+" → "+m.slice(2,4)+(m[4]?" = "+m[4].toUpperCase():"");}
+function renderAnalysis(){
+  const best=currentBest||(currentLines[1]&&currentLines[1].move);
+  $("bestMove").textContent=prettyMove(best);
+  const first=currentLines[1];$("evaluation").textContent=first?"Evaluation: "+scoreText(first)+" · depth "+first.depth:"Analyzing position…";
+  const names=["Best move","Second choice","Third choice"];
+  $("moves").innerHTML=[1,2,3].map((k)=>{const l=currentLines[k];return `<div class="move"><strong><i class="dot" style="background:${COLORS[k-1]}"></i>${names[k-1]}</strong><span>${l?prettyMove(l.move)+" · "+scoreText(l):"—"}</span></div>`;}).join("");
+}
+function squareCenter(square){
+  const R=boardRect(),file=square.charCodeAt(0)-97,rank=+square[1],flip=$("orientation").value==="black";
+  const col=flip?7-file:file,row=flip?rank-1:8-rank;
+  return{x:R.x+(col+.5)*R.w,y:R.y+(row+.5)*R.h};
+}
+function drawArrow(from,to,color,width,alpha){
+  const a=squareCenter(from),b=squareCenter(to);ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  const angle=Math.atan2(b.y-a.y,b.x-a.x),head=width*2.8;
+  ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x-head*Math.cos(angle-.48),b.y-head*Math.sin(angle-.48));ctx.lineTo(b.x-head*Math.cos(angle+.48),b.y-head*Math.sin(angle+.48));ctx.closePath();ctx.fill();ctx.restore();
+}
+function drawLoop(){
+  if(videoReady&&video.readyState>=2){
+    ctx.drawImage(video,0,0,canvas.width,canvas.height);
+    const R=boardRect();
+    if(R){
+      if(!learned){ctx.save();ctx.strokeStyle="#ef4444";ctx.lineWidth=2;for(let i=0;i<=8;i++){ctx.beginPath();ctx.moveTo(R.x+i*R.w,R.y);ctx.lineTo(R.x+i*R.w,R.y+8*R.h);ctx.stroke();ctx.beginPath();ctx.moveTo(R.x,R.y+i*R.h);ctx.lineTo(R.x+8*R.w,R.y+i*R.h);ctx.stroke();}ctx.restore();}
+      if(learned&&grid&&$("showLetters").checked){ctx.save();ctx.font="bold 19px system-ui";ctx.textAlign="left";ctx.textBaseline="top";for(let r=0;r<8;r++)for(let f=0;f<8;f++)if(grid[r][f]){ctx.fillStyle="#ec4899";ctx.fillText(grid[r][f],R.x+f*R.w+4,R.y+r*R.h+3);}ctx.restore();}
+      if(learned){const main=currentBest||(currentLines[1]&&currentLines[1].move);if($("showAlternatives").checked){[2,3].forEach(k=>{const m=currentLines[k]?.move;if(m&&m.length>=4&&m!==main)drawArrow(m.slice(0,2),m.slice(2,4),COLORS[k-1],Math.max(4,R.w*.045),.7);});}if(main&&main.length>=4)drawArrow(main.slice(0,2),main.slice(2,4),COLORS[0],Math.max(7,R.w*.075),.88);}
+    }
+  }
+  requestAnimationFrame(drawLoop);
+}
+function tick(){
+  if(!videoReady||!learned||corners.length!==2)return;
+  try{
+    grid=readBoard();const b=normalize(grid);
+    if(!valid(b)){
+      $("positionState").textContent="Board read uncertain — check the pink letters.";
+      status("Position not analyzed: one or more pieces are uncertain, or a king is missing.","warn");return;
+    }
+    const fen=makeFen(b,$("turn").value);
+    $("fen").textContent=fen;
+    $("positionState").textContent="Board detected · "+b.flat().filter(Boolean).length+" pieces";
+    if(fen===stableFen)stableCount++;else{stableFen=fen;stableCount=1;}
+    if(stableCount>=2&&fen!==lastAnalysisKey){lastAnalysisKey=fen;analyze(fen);status("Position detected. Stockfish is analyzing.","good");}
+  }catch(err){status("Board reading error: "+err.message,"bad");}
+}
+setInterval(tick,650);
+["strength","time"].forEach(id=>$(id).addEventListener("change",()=>{lastAnalysisKey="";if(lastFen)analyze(lastFen);}));
+$("turn").addEventListener("change",()=>{lastAnalysisKey="";});
+$("orientation").addEventListener("change",()=>{if(learned){templates={};learned=false;status("Orientation changed. Learn the starting pieces again.","warn");}});
+})();
+</script>
+</body>
+</html>
