@@ -1,147 +1,23 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#0b1220">
-<title>KNIGHT — Chess Analysis</title>
-<style>
-:root{color-scheme:dark;--bg:#090f19;--panel:#111c2b;--panel2:#0c1522;--line:#26374b;--text:#edf4fc;--muted:#93a4b8;--mint:#79e0ba;--gold:#e9c878;--red:#ff9b9b}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -25%,#17334a 0,transparent 55%),var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,Arial,sans-serif}
-header{height:66px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(20px,5vw);background:#090f19dd}
-.brand{font-weight:950;letter-spacing:.23em;font-size:18px}.brand span{color:var(--mint)}.tag{color:var(--muted);font-size:10px;letter-spacing:.16em}
-main{max-width:1250px;margin:36px auto;padding:0 22px}.eyebrow{color:var(--mint);font-size:10px;font-weight:850;letter-spacing:.2em}h1{font-size:clamp(29px,4vw,46px);line-height:1.04;letter-spacing:-.045em;margin:8px 0 10px}.sub{color:var(--muted);max-width:720px;margin:0 0 24px}
-.layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,.85fr);gap:16px;align-items:start}.panel{background:linear-gradient(145deg,#142235,#101a29);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0;box-shadow:0 16px 45px #0003}
-.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}.panel-head b{font-size:11px;letter-spacing:.14em}.pill{border:1px solid #315748;color:var(--mint);border-radius:99px;padding:5px 9px;font-size:9px;letter-spacing:.1em}
-.viewport{position:relative;aspect-ratio:16/9;width:100%;background:#070c13;border:1px solid var(--line);border-radius:11px;overflow:hidden;display:grid;place-items:center}.viewport canvas{display:none;width:100%;height:100%;object-fit:contain}.empty{text-align:center;color:var(--muted);padding:22px}.empty .mark{font-size:38px;color:var(--mint)}.empty strong{display:block;color:var(--text);font-size:14px;margin:7px 0 3px}.empty p{margin:0;font-size:12px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}button{border:1px solid transparent;background:var(--mint);color:#08140f;border-radius:9px;padding:11px 15px;font-size:12px;font-weight:850;cursor:pointer}button:hover{filter:brightness(1.07)}button:disabled{opacity:.4;cursor:not-allowed}.secondary{background:#202f42;border-color:#35485f;color:var(--text)}.danger{background:#39262d;border-color:#69404a;color:#ffb3b3}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.stat{background:var(--panel2);border:1px solid var(--line);padding:10px 12px;border-radius:9px}.stat small{display:block;color:var(--muted);font-size:9px;letter-spacing:.13em}.stat b{display:block;margin-top:4px;font-size:12px}
-.card{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:14px;margin-bottom:12px}.card h2{font-size:11px;letter-spacing:.14em;margin:0 0 8px}.muted{color:var(--muted);font-size:12px}.statusline{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}.dot{width:7px;height:7px;border-radius:50%;background:#708297}.dot.on{background:var(--mint);box-shadow:0 0 10px #79e0ba88}
-.move{display:flex;align-items:center;justify-content:space-between;gap:12px}.move strong{font-size:27px;letter-spacing:.03em;color:var(--gold)}.move small{display:block;color:var(--muted);font-size:10px}.badge{font-size:10px;border:1px solid var(--line);border-radius:7px;padding:5px 8px;color:var(--muted)}
-.disclaimer{border-left:2px solid var(--gold);padding:8px 10px;color:#c7b98f;background:#2a2519;font-size:11px;border-radius:0 7px 7px 0}
-.log{font:11px/1.7 ui-monospace,monospace;color:#aebed0;white-space:pre-wrap;max-height:150px;overflow:auto}.foot{text-align:center;color:#65778b;padding:25px 10px;font-size:10px;letter-spacing:.15em}
-@media(max-width:850px){.layout{grid-template-columns:1fr}.tag{display:none}main{margin:25px auto}}
-</style>
-</head>
-<body>
-<header><div class="brand">KNIGHT<span>.</span></div><div class="tag">SCREEN ANALYSIS / BROWSER EDITION</div></header>
-<main>
-<div class="eyebrow">CHESS POSITION WORKSPACE</div>
-<h1>Your board. Clear analysis.</h1>
-<p class="sub">Share the window with your chessboard. KNIGHT will show the live capture and help validate the board before analysis. A move is shown only when a position can be read reliably.</p>
-<div class="layout">
-<section class="panel">
- <div class="panel-head"><b>LIVE BOARD CAPTURE</b><span class="pill" id="connection">NOT CONNECTED</span></div>
- <div class="viewport"><canvas id="preview"></canvas><div class="empty" id="empty"><div class="mark">♞</div><strong>No screen shared</strong><p>Click Share screen and select your chess game window.</p></div></div>
- <div class="actions">
-  <button id="share">Share screen</button><button class="secondary" id="scan" disabled>Check board</button><button class="secondary" id="stop" disabled>Stop sharing</button>
- </div>
- <div class="stats">
-  <div class="stat"><small>CAPTURE</small><b id="captureState">Waiting for permission</b></div>
-  <div class="stat"><small>BOARD CHECK</small><b id="boardState">Not checked</b></div>
- </div>
- <div class="disclaimer" style="margin-top:13px">This browser-only build detects a possible board region. It does not yet recognize piece identities or calculate engine moves. Never treat an unverified position as a recommendation.</div>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080e18"><title>KNIGHT — Chess Analysis</title><link rel="stylesheet" href="./assets/css/app.css"></head>
+<body><header><div class="brand">KNIGHT<span>.</span></div><div class="top">CHESS POSITION ANALYSIS</div></header>
+<main><div class="eyebrow">ANALYSIS WORKSPACE / 01</div><h1>Share. Set the position. Analyze.</h1><p class="lead">A fresh chess workspace with live screen preview, an editable 8×8 board and Stockfish engine analysis. For accurate results, the board editor must match the position in your shared game.</p>
+<div class="workspace">
+<section class="panel"><div class="head"><b>SCREEN SHARE</b><span class="tag" id="captureStatus">NOT CONNECTED</span></div>
+<div class="screen"><video id="screenVideo" autoplay muted playsinline hidden></video><div class="empty" id="screenEmpty"><div style="font-size:36px;color:#79e0ba">♞</div><strong>Share your chess window</strong><span class="muted">The shared screen appears here.</span></div></div>
+<div class="actions"><button id="share">Share screen</button><button class="secondary" id="stopShare">Stop sharing</button></div>
+<p class="capture-note">Screen sharing is a preview. It does not automatically read chess pieces. Use the editor below to enter the exact position.</p>
+<div class="head" style="margin-top:22px"><b>POSITION EDITOR</b><span class="tag" id="positionStatus">START POSITION</span></div>
+<div class="board-tools" id="palette"></div>
+<div class="board-wrap"><div class="board" id="board" aria-label="Editable chessboard"></div><div class="board-meta"><span>Click a piece, then its destination square to move it.</span><span id="turn">White to move</span></div></div>
+<div class="field"><label>FEN POSITION</label><input id="fen" spellcheck="false" autocomplete="off" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></div>
+<div class="actions"><button class="secondary" id="loadFen">Load FEN</button><button class="secondary" id="reset">Starting position</button><button class="secondary" id="clear">Clear board</button></div>
+<p class="hint">Piece palette: choose a piece, then click a square to place it. Select mode lets you move pieces. Erase removes a piece.</p>
 </section>
-<aside class="panel">
- <div class="panel-head"><b>POSITION ANALYSIS</b><span class="badge">HONEST STATUS</span></div>
- <div class="card">
-  <div class="statusline"><span class="dot" id="dot"></span><span id="analysisState">Waiting for a shared board</span></div>
-  <div class="move" style="margin-top:13px"><div><small>BEST MOVE</small><strong id="bestMove">—</strong></div><span class="badge" id="engineStatus">Engine offline</span></div>
-  <p class="muted" id="analysisText" style="margin:8px 0 0">Share a chess window and select Check board. No position has been read yet.</p>
- </div>
- <div class="card"><h2>WHAT THIS BUILD CAN VERIFY</h2><p class="muted" id="validationText">No board check performed.</p></div>
- <div class="card"><h2>ACTIVITY</h2><div class="log" id="log">[system] KNIGHT analysis workspace loaded.\n[system] Waiting for screen-share permission.\n[privacy] Captured frames stay in this browser tab.</div></div>
- <p class="muted">Tip: share only the chess game window and keep the full board visible.</p>
-</aside>
-</div>
-</main>
-<div class="foot">KNIGHT · PRIVATE IN-BROWSER CAPTURE</div>
-<video id="source" autoplay muted playsinline style="display:none"></video>
-<script>
-'use strict';
-const $=id=>document.getElementById(id);
-const video=$('source'),canvas=$('preview'),ctx=canvas.getContext('2d');
-let stream=null,raf=0,scanning=false,lastBoard=null;
-function log(s){$('log').textContent+='\n['+new Date().toLocaleTimeString()+'] '+s;$('log').scrollTop=$('log').scrollHeight}
-function status(state,text,detail){$('analysisState').textContent=state;$('analysisText').textContent=text;$('validationText').textContent=detail;$('dot').classList.toggle('on',!!stream)}
-function stopSharing(){
- if(stream)stream.getTracks().forEach(t=>t.stop());
- stream=null;cancelAnimationFrame(raf);scanning=false;lastBoard=null;video.srcObject=null;
- canvas.style.display='none';$('empty').style.display='block';$('connection').textContent='NOT CONNECTED';
- $('captureState').textContent='Waiting for permission';$('boardState').textContent='Not checked';
- $('share').disabled=false;$('scan').disabled=true;$('stop').disabled=true;$('scan').textContent='Check board';
- $('bestMove').textContent='—';$('engineStatus').textContent='Engine offline';
- status('Waiting for a shared board','Share a chess window to begin.','No board check performed.');
- log('Screen sharing stopped.');
-}
-function draw(){
- if(!stream||video.readyState<2){raf=requestAnimationFrame(draw);return}
- const w=video.videoWidth,h=video.videoHeight;if(!w||!h){raf=requestAnimationFrame(draw);return}
- if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h}
- ctx.drawImage(video,0,0,w,h);
- if(lastBoard){ctx.save();ctx.strokeStyle='#79e0ba';ctx.lineWidth=Math.max(3,w/450);ctx.strokeRect(lastBoard.x,lastBoard.y,lastBoard.size,lastBoard.size);ctx.restore()}
- raf=requestAnimationFrame(draw);
-}
-$('share').addEventListener('click',async()=>{
- if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){status('Screen capture unavailable','Use a modern desktop browser on HTTPS.','The browser does not expose screen-capture support on this page.');return}
- try{
-  stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:8},audio:false});
-  video.srcObject=stream;await video.play();
-  $('empty').style.display='none';canvas.style.display='block';$('connection').textContent='CONNECTED';
-  $('captureState').textContent=video.videoWidth+' × '+video.videoHeight;$('boardState').textContent='Ready to check';
-  $('scan').disabled=false;$('stop').disabled=false;$('share').disabled=true;
-  stream.getVideoTracks()[0].addEventListener('ended',stopSharing,{once:true});
-  raf=requestAnimationFrame(draw);
-  status('Screen connected','Live capture is running. Select Check board when the full chessboard is visible.','Capture is active. Piece recognition and engine analysis are not included in this build.');
-  log('Screen capture connected: '+video.videoWidth+'×'+video.videoHeight);
- }catch(e){log('Share cancelled or failed: '+e.message);status('Share not started','Allow screen sharing and select the chess game window.','No screen frame was received.')}
-});
-$('stop').addEventListener('click',stopSharing);
-function sample(gray,w,h,x,y,size){
- const left=Math.max(0,Math.floor(x+size*.25)),right=Math.min(w-1,Math.ceil(x+size*.75));
- const top=Math.max(0,Math.floor(y+size*.25)),bottom=Math.min(h-1,Math.ceil(y+size*.75));
- let sum=0,n=0,step=Math.max(2,Math.floor(size/20));
- for(let yy=top;yy<=bottom;yy+=step)for(let xx=left;xx<=right;xx+=step){sum+=gray[yy*w+xx];n++}
- return n?sum/n:0;
-}
-function score(gray,w,h,x,y,size){
- const a=new Float32Array(64);let ev=0,od=0,ne=0,no=0,edges=0,n=0;
- for(let r=0;r<8;r++)for(let c=0;c<8;c++){
-  const v=sample(gray,w,h,x+c*size/8,y+r*size/8,size/8);a[r*8+c]=v;
-  if((r+c)&1){od+=v;no++}else{ev+=v;ne++}
- }
- for(let r=0;r<8;r++)for(let c=0;c<8;c++){const i=r*8+c;if(c<7){edges+=Math.abs(a[i]-a[i+1]);n++}if(r<7){edges+=Math.abs(a[i]-a[i+8]);n++}}
- return edges/n+Math.abs(ev/ne-od/no)*.55;
-}
-function findBoard(){
- const scale=Math.min(1,420/video.videoWidth),w=Math.max(1,Math.round(video.videoWidth*scale)),h=Math.max(1,Math.round(video.videoHeight*scale));
- const work=document.createElement('canvas');work.width=w;work.height=h;
- const c=work.getContext('2d',{willReadFrequently:true});c.drawImage(video,0,0,w,h);
- const px=c.getImageData(0,0,w,h).data,gray=new Uint8Array(w*h);
- for(let i=0,j=0;i<gray.length;i++,j+=4)gray[i]=(px[j]*77+px[j+1]*150+px[j+2]*29)>>8;
- let best=null;const min=Math.max(60,Math.floor(Math.min(w,h)*.28)),max=Math.floor(Math.min(w,h)*.92);
- for(let size=min;size<=max;size+=Math.max(6,Math.floor(min*.07))){
-  const step=Math.max(8,Math.floor(size*.09));
-  for(let y=0;y+size<=h;y+=step)for(let x=0;x+size<=w;x+=step){const s=score(gray,w,h,x,y,size);if(!best||s>best.score)best={x,y,size,score:s}}
- }
- return best?{...best,x:best.x/scale,y:best.y/scale,size:best.size/scale}:null;
-}
-$('scan').addEventListener('click',()=>{
- if(scanning)return;
- if(!stream||video.readyState<2||!video.videoWidth){status('Capture not ready','Wait for the shared chess window to appear, then try again.','No usable video frame is available.');return}
- scanning=true;$('scan').disabled=true;$('scan').textContent='Checking…';$('boardState').textContent='Checking…';
- status('Checking board region','Analyzing one captured frame. This may take a moment.','This check looks for an 8×8 alternating-square pattern only.');
- setTimeout(()=>{
-  try{
-   const b=findBoard();
-   if(!b||b.score<18){lastBoard=null;$('boardState').textContent='Not found';$('bestMove').textContent='—';$('engineStatus').textContent='Engine offline';status('Board not verified','No convincing board pattern was found. Share only the game window and make the board larger.','A reliable board boundary was not identified. No move will be invented.');log('Board pattern not verified. Score: '+(b?b.score.toFixed(1):'none'));return}
-   lastBoard=b;$('boardState').textContent='Possible board found';$('bestMove').textContent='—';$('engineStatus').textContent='Engine offline';
-   status('Board region detected','The green outline marks a possible chessboard. The site still cannot identify pieces or calculate the best move.','Possible 8×8 region; score '+b.score.toFixed(1)+'. Piece recognition, FEN generation and Stockfish integration are not implemented.');
-   log('Possible board region found. Score '+b.score.toFixed(1)+', width '+Math.round(b.size)+' px.');
-  }catch(e){$('boardState').textContent='Check failed';status('Board check failed','The shared frame could not be analyzed. Stop sharing and try again.','Technical error: '+e.message);log('Check error: '+e.message)}
-  finally{scanning=false;$('scan').disabled=!stream;$('scan').textContent='Check board'}
- },40);
-});
-</script>
-</body>
-</html>
+<aside class="panel"><div class="head"><b>ENGINE ANALYSIS</b><span class="tag">LOCAL WASM</span></div>
+<div class="box"><div class="status"><span class="dot" id="engineDot"></span><span id="engineState">Not loaded</span></div><div style="margin-top:13px"><div class="muted">BEST MOVE</div><div class="move" id="bestMove">—</div></div><p class="muted" id="moveText">Enter the current position, then click Analyze position.</p><div class="eval" id="eval"></div></div>
+<div class="actions"><button id="analyze">Analyze position</button></div>
+<div class="box" style="margin-top:14px"><h2>HOW TO USE</h2><p class="muted">1. Share your chess window.<br>2. Recreate the position on the board or paste its FEN.<br>3. Confirm whose turn it is.<br>4. Click Analyze position and wait for Stockfish.</p></div>
+<div class="box"><h2>ACTIVITY LOG</h2><div class="log" id="log">[system] KNIGHT loaded.</div></div>
+<div class="notice">Important: the engine analyzes only the position entered in the editor. Since automatic piece recognition is not included, an incorrect board entry produces an incorrect recommendation.</div>
+</aside></div></main><footer>KNIGHT · BROWSER-BASED CHESS ANALYSIS</footer><script type="module" src="./assets/js/app.js"></script></body></html>
