@@ -1,2 +1,0 @@
-/* Stockfish 19 lite single-threaded worker; engine is GPL-3.0. */
-self.Module=self.Module||{};self.Module.locateFile=function(path){return path.endsWith(".wasm")?"https://cdn.jsdelivr.net/npm/stockfish@19.0.1/stockfish-19-lite-single.wasm":path};try{importScripts("https://cdn.jsdelivr.net/npm/stockfish@19.0.1/stockfish-19-lite-single.js")}catch(e){self.postMessage("KNIGHT_ENGINE_ERROR "+e.message)}
