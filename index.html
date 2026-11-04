@@ -1,23 +1,70 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#080e18"><title>KNIGHT — Chess Analysis</title><link rel="stylesheet" href="./assets/css/app.css"></head>
-<body><header><div class="brand">KNIGHT<span>.</span></div><div class="top">CHESS POSITION ANALYSIS</div></header>
-<main><div class="eyebrow">ANALYSIS WORKSPACE / 01</div><h1>Share. Set the position. Analyze.</h1><p class="lead">A fresh chess workspace with live screen preview, an editable 8×8 board and Stockfish engine analysis. For accurate results, the board editor must match the position in your shared game.</p>
-<div class="workspace">
-<section class="panel"><div class="head"><b>SCREEN SHARE</b><span class="tag" id="captureStatus">NOT CONNECTED</span></div>
-<div class="screen"><video id="screenVideo" autoplay muted playsinline hidden></video><div class="empty" id="screenEmpty"><div style="font-size:36px;color:#79e0ba">♞</div><strong>Share your chess window</strong><span class="muted">The shared screen appears here.</span></div></div>
-<div class="actions"><button id="share">Share screen</button><button class="secondary" id="stopShare">Stop sharing</button></div>
-<p class="capture-note">Screen sharing is a preview. It does not automatically read chess pieces. Use the editor below to enter the exact position.</p>
-<div class="head" style="margin-top:22px"><b>POSITION EDITOR</b><span class="tag" id="positionStatus">START POSITION</span></div>
-<div class="board-tools" id="palette"></div>
-<div class="board-wrap"><div class="board" id="board" aria-label="Editable chessboard"></div><div class="board-meta"><span>Click a piece, then its destination square to move it.</span><span id="turn">White to move</span></div></div>
-<div class="field"><label>FEN POSITION</label><input id="fen" spellcheck="false" autocomplete="off" value="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"></div>
-<div class="actions"><button class="secondary" id="loadFen">Load FEN</button><button class="secondary" id="reset">Starting position</button><button class="secondary" id="clear">Clear board</button></div>
-<p class="hint">Piece palette: choose a piece, then click a square to place it. Select mode lets you move pieces. Erase removes a piece.</p>
+<html lang="tr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b111b"><title>KNIGHT — Chess Assistant</title>
+<style>
+:root{color-scheme:dark;--bg:#0b111b;--panel:#131e2b;--panel2:#0e1722;--line:#26384b;--text:#edf4fb;--muted:#9aabba;--accent:#79e0bb;--gold:#f2cb78;--red:#f17e83}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(1000px 600px at 15% -10%,#1b3440 0,transparent 60%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+header{max-width:1440px;margin:auto;padding:22px 26px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #ffffff12}
+.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#a4f1d4,#398c79);color:#092019;display:grid;place-items:center;font-size:27px;font-weight:900}.brand strong{font-size:18px;letter-spacing:.12em}.brand small{display:block;color:var(--muted);font-size:11px;letter-spacing:.16em}
+.status{color:var(--accent);font-size:12px;letter-spacing:.08em}.wrap{max-width:1440px;margin:auto;padding:24px;display:grid;grid-template-columns:minmax(320px,1.1fr) minmax(330px,.9fr);gap:22px}
+.panel{background:linear-gradient(160deg,#172535,#101925);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 18px 55px #0003}.panel h2{margin:0 0 4px;font-size:17px}.sub{color:var(--muted);font-size:12px;margin:0 0 16px}
+.board-shell{max-width:680px;margin:auto}.board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;border:7px solid #263747;border-radius:8px;overflow:hidden;box-shadow:0 15px 35px #0006;user-select:none}
+.sq{border:0;border-radius:0;display:grid;place-items:center;padding:0;position:relative;cursor:pointer;font-family:"Arial Unicode MS",serif;font-size:clamp(26px,5.1vw,57px);line-height:1}.light{background:#e8dfc9;color:#1c2730}.dark{background:#769184;color:#18231f}.sq.selected{outline:4px solid var(--gold);outline-offset:-4px}.sq.target:after{content:"";width:24%;height:24%;border-radius:50%;background:#16271d66;position:absolute}.sq .coord{position:absolute;left:4px;bottom:2px;font:10px system-ui;opacity:.6}.sq .piece{filter:drop-shadow(0 2px 1px #0005)}
+.board-foot{display:flex;justify-content:space-between;color:var(--muted);font-size:11px;margin-top:9px}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.between{justify-content:space-between}.btn{border:1px solid var(--line);background:#1b2b3c;color:var(--text);padding:10px 14px;border-radius:10px;font-weight:650;cursor:pointer}.btn:hover{border-color:#5d8b83}.btn.primary{background:var(--accent);border-color:var(--accent);color:#082219}.btn.warn{color:#ffb5a9}.btn:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{background:#0b1420;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:10px;min-width:0}input:focus,select:focus{outline:1px solid var(--accent)}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}.field{min-width:0;flex:1}.field input{width:100%}.pieces{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0}.piecebtn{background:#0e1925;border:1px solid var(--line);border-radius:9px;height:46px;font-size:27px;cursor:pointer}.piecebtn.active{border:2px solid var(--gold);background:#3a3324}
+.section{border-top:1px solid var(--line);padding-top:15px;margin-top:16px}.result{background:#0b1520;border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:12px}.move{font-size:30px;font-weight:800;color:var(--accent);letter-spacing:.04em}.muted{color:var(--muted)}.eval{font-size:13px;color:var(--gold)}.hint{font-size:12px;color:var(--muted);margin-top:9px}
+#preview{width:100%;aspect-ratio:16/9;object-fit:contain;background:#05090e;border:1px solid var(--line);border-radius:12px;margin-top:10px}
+#log{font:11px/1.5 ui-monospace,monospace;color:#a8bac9;max-height:85px;overflow:auto;white-space:pre-wrap}
+.notice{padding:11px 12px;border-radius:10px;background:#1c2b31;color:#c6e8db;font-size:12px;margin:12px 0}
+footer{max-width:1440px;margin:auto;padding:0 26px 28px;color:#708397;font-size:11px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr;padding:14px}.right{order:2}header{padding:16px}.brand small{font-size:9px}}@media(min-width:901px){.board{max-height:calc(100vh - 230px)}}
+</style></head>
+<body>
+<header><div class="brand"><div class="logo">♞</div><div><strong>KNIGHT</strong><small>CHESS POSITION ASSISTANT</small></div></div><div class="status" id="engineStatus">● ENGINE STARTING</div></header>
+<main class="wrap">
+<section class="panel">
+ <div class="row between"><div><h2>Board editor</h2><p class="sub">Taşları tahtaya kendin yerleştir, motor en iyi hamleyi bulsun.</p></div><button class="btn" id="startPos">Başlangıç dizilimi</button></div>
+ <div class="board-shell"><div class="board" id="board" aria-label="Satranç tahtası"></div><div class="board-foot"><span>Dosyalar: a → h</span><span>Tahtaya tıkla: taş yerleştir / seç</span></div></div>
+ <div class="section"><label>Yerleştirmek istediğin taş</label><div class="pieces" id="palette"></div>
+ <div class="row"><button class="btn" id="erase">⌫ Silgi</button><button class="btn" id="clear">Tahtayı temizle</button><button class="btn" id="flip">Tahtayı çevir</button><div class="field"><label>Sıra kimde?</label><select id="turn"><option value="w">Beyaz oynayacak</option><option value="b">Siyah oynayacak</option></select></div></div></div>
+ <div class="section"><label for="fen">FEN konumu (isteğe bağlı)</label><div class="row"><input id="fen" style="flex:1;width:100%" spellcheck="false" placeholder="FEN kodunu buraya yapıştır"><button class="btn" id="loadFen">Yükle</button></div><div class="hint">Taşları tek tek yerleştirmen veya FEN yapıştırman yeterli. Analizden önce iki şahın da tahtada olduğundan emin ol.</div></div>
 </section>
-<aside class="panel"><div class="head"><b>ENGINE ANALYSIS</b><span class="tag">LOCAL WASM</span></div>
-<div class="box"><div class="status"><span class="dot" id="engineDot"></span><span id="engineState">Not loaded</span></div><div style="margin-top:13px"><div class="muted">BEST MOVE</div><div class="move" id="bestMove">—</div></div><p class="muted" id="moveText">Enter the current position, then click Analyze position.</p><div class="eval" id="eval"></div></div>
-<div class="actions"><button id="analyze">Analyze position</button></div>
-<div class="box" style="margin-top:14px"><h2>HOW TO USE</h2><p class="muted">1. Share your chess window.<br>2. Recreate the position on the board or paste its FEN.<br>3. Confirm whose turn it is.<br>4. Click Analyze position and wait for Stockfish.</p></div>
-<div class="box"><h2>ACTIVITY LOG</h2><div class="log" id="log">[system] KNIGHT loaded.</div></div>
-<div class="notice">Important: the engine analyzes only the position entered in the editor. Since automatic piece recognition is not included, an incorrect board entry produces an incorrect recommendation.</div>
-</aside></div></main><footer>KNIGHT · BROWSER-BASED CHESS ANALYSIS</footer><script type="module" src="./assets/js/app.js"></script></body></html>
+<section class="right">
+ <div class="panel"><h2>Best move analysis</h2><p class="sub">Stockfish satranç motoru — pozisyonu hesaplar ve en iyi hamleyi önerir.</p>
+ <div class="row"><div class="field"><label>Hesaplama derinliği</label><select id="depth"><option value="12">Hızlı · 12</option><option value="16" selected>Dengeli · 16</option><option value="20">Güçlü · 20</option><option value="24">Derin · 24</option></select></div><button class="btn primary" id="analyze">♟ ANALİZ ET</button></div>
+ <div class="result"><div class="muted" style="font-size:11px;letter-spacing:.12em">ÖNERİLEN EN İYİ HAMLE</div><div class="move" id="bestMove">— —</div><div class="eval" id="evaluation">Pozisyon bekleniyor</div><div class="hint" id="explain">Tahtayı ayarla ve Analiz Et'e bas.</div></div>
+ <div class="row" style="margin-top:10px"><button class="btn" id="playMove" disabled>Hamleyi tahtada uygula</button><button class="btn" id="copyFen">FEN kopyala</button></div>
+ <div class="notice">Önemli: Ekran paylaşımı yalnızca tahtayı önizler. Uygulama ekran görüntüsündeki taşları otomatik tanımaz; doğru konumu sen tahtaya yerleştirirsin. Böylece motor yanlış taş okumaz.</div>
+ </div>
+ <div class="panel" style="margin-top:18px"><div class="row between"><div><h2>Ekran önizlemesi</h2><p class="sub">Oyun ekranını referans olarak paylaş.</p></div><button class="btn" id="share">Ekranımı paylaş</button></div><video id="preview" autoplay muted playsinline></video><div class="row" style="margin-top:9px"><button class="btn" id="stopShare" disabled>Paylaşımı durdur</button><span class="hint" id="shareStatus">Henüz ekran paylaşılmadı.</span></div></div>
+ <div class="panel" style="margin-top:18px"><div class="row between"><h2>Engine console</h2><span class="muted" style="font-size:11px">Stockfish UCI</span></div><pre id="log">Motor yükleniyor…</pre></div>
+</section></main>
+<footer>KNIGHT · Analiz için konumu doğru gir. Satranç motoru öneri üretir; hamleyi uygulamadan önce tahtadaki gerçek pozisyonla karşılaştır.</footer>
+<script type="module">
+import { Chess } from "https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm";
+const $=id=>document.getElementById(id);
+const glyph={K:"♔",Q:"♕",R:"♖",B:"♗",N:"♘",P:"♙",k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"};
+const palette=["K","Q","R","B","N","P","k","q","r","b","n","p"];
+let board=Array(64).fill(null),selectedPiece="P",selectedSquare=null,flipped=false,eraseMode=false,best=null,worker=null,ready=false,searching=false;
+const initial=new Chess();const files="abcdefgh";
+function setStart(){const b=initial.board();board=[];for(let r=0;r<8;r++)for(let c=0;c<8;c++){const p=b[r][c];board.push(p?p.color==="w"?p.type.toUpperCase():p.type:null)}$("turn").value="w";render();syncFen()}
+function renderPalette(){ $("palette").innerHTML="";palette.forEach(p=>{const b=document.createElement("button");b.className="piecebtn"+(selectedPiece===p&&!eraseMode?" active":"");b.textContent=glyph[p];b.title=(p===p.toUpperCase()?"Beyaz ":"Siyah ")+p.toUpperCase();b.onclick=()=>{selectedPiece=p;eraseMode=false;renderPalette()};$("palette").append(b)})}
+function render(){const el=$("board");el.innerHTML="";for(let vr=0;vr<8;vr++)for(let vc=0;vc<8;vc++){const r=flipped?7-vr:vr,c=flipped?7-vc:vc,i=r*8+c,s=document.createElement("button");s.className="sq "+((r+c)%2?"dark":"light")+(selectedSquare===i?" selected":"");s.setAttribute("aria-label",files[c]+(8-r));if(board[i]){const p=document.createElement("span");p.className="piece";p.textContent=glyph[board[i]];s.append(p)}if(vc===0){const co=document.createElement("span");co.className="coord";co.textContent=8-r;s.append(co)}if(vr===7){const co=document.createElement("span");co.className="coord";co.style.left="auto";co.style.right="4px";co.textContent=files[c];s.append(co)}s.onclick=()=>squareClick(i);el.append(s)}}
+function squareClick(i){if(eraseMode){board[i]=null}else{board[i]=selectedPiece}selectedSquare=i;render();syncFen();best=null;$("bestMove").textContent="— —";$("evaluation").textContent="Pozisyon değişti";$("playMove").disabled=true}
+function fenFromBoard(){let rows=[];for(let r=0;r<8;r++){let row="",empty=0;for(let c=0;c<8;c++){const p=board[r*8+c];if(!p)empty++;else{if(empty)row+=empty;empty=0;row+=p}}if(empty)row+=empty;rows.push(row)}return rows.join("/")+" "+$("turn").value+" - - 0 1"}
+function syncFen(){$("fen").value=fenFromBoard()}
+function loadFen(){try{const c=new Chess($("fen").value.trim());board=[];c.board().forEach(row=>row.forEach(p=>board.push(p?p.color==="w"?p.type.toUpperCase():p.type:null)));$("turn").value=c.turn();render();syncFen();best=null;$("bestMove").textContent="— —";$("evaluation").textContent="FEN yüklendi";$("explain").textContent="Pozisyon hazır. Analiz edebilirsin."}catch(e){$("evaluation").textContent="Geçersiz FEN";$("explain").textContent=e.message}}
+function log(s){const el=$("log");el.textContent=(el.textContent+"\n"+s).split("\n").slice(-8).join("\n");el.scrollTop=el.scrollHeight}
+function initEngine(){try{const code=`self.Module=self.Module||{};self.Module.locateFile=(p)=>p.endsWith(".wasm")?"https://cdn.jsdelivr.net/npm/stockfish@19.0.1/stockfish-19-lite-single.wasm":p;importScripts("https://cdn.jsdelivr.net/npm/stockfish@19.0.1/stockfish-19-lite-single.js");`;const blob=new Blob([code],{type:"text/javascript"});worker=new Worker(URL.createObjectURL(blob));worker.onmessage=e=>{const line=typeof e.data==="string"?e.data:String(e.data);log(line);if(line==="uciok"){worker.postMessage("isready")}if(line==="readyok"){ready=true;$("engineStatus").textContent="● ENGINE READY";$("engineStatus").style.color="var(--accent)"}if(line.startsWith("info ")&&line.includes(" score ")){const m=line.match(/score (cp|mate) (-?\d+)/);if(m){const val=m[1]==="mate"?"Mat "+m[2]:(Number(m[2])/100).toFixed(2)+" pawn";$("evaluation").textContent="Değerlendirme: "+val}}if(line.startsWith("bestmove ")){searching=false;const u=line.split(/\s+/)[1];if(u&&u!=="(none)"){best=u;$("bestMove").textContent=u.slice(0,2)+" → "+u.slice(2,4)+(u.length>4?" = "+u[4].toUpperCase():"");$("explain").textContent="Motorun önerdiği hamle. Uygulamadan önce oyun ekranıyla karşılaştır.";$("playMove").disabled=false}else{$("bestMove").textContent="Hamle yok";$("explain").textContent="Oyun bitmiş veya pozisyon geçersiz olabilir."}}};worker.onerror=e=>{$("engineStatus").textContent="● ENGINE ERROR";$("engineStatus").style.color="var(--red)";log("Engine error: "+e.message)};worker.postMessage("uci");}catch(e){$("engineStatus").textContent="● ENGINE FAILED";log(String(e))}}
+function analyze(){if(!ready){$("explain").textContent="Motor henüz hazır değil. Birkaç saniye bekle.";return}let fen=fenFromBoard();try{new Chess(fen)}catch(e){$("evaluation").textContent="Pozisyon geçersiz";$("explain").textContent=e.message;return}best=null;searching=true;$("bestMove").textContent="Hesaplanıyor…";$("evaluation").textContent="Stockfish düşünüyor";$("playMove").disabled=true;worker.postMessage("stop");worker.postMessage("position fen "+fen);worker.postMessage("go depth "+$("depth").value)}
+function applyBest(){if(!best)return;const from=best.slice(0,2),to=best.slice(2,4),p=best[4];try{const c=new Chess(fenFromBoard());c.move({from,to,promotion:p||"q"});board=[];c.board().forEach(row=>row.forEach(x=>board.push(x?x.color==="w"?x.type.toUpperCase():x.type:null)));$("turn").value=c.turn();render();syncFen();best=null;$("playMove").disabled=true;$("explain").textContent="Önerilen hamle tahtaya uygulandı."}catch(e){$("explain").textContent="Hamle uygulanamadı: "+e.message}}
+$("startPos").onclick=setStart;$("clear").onclick=()=>{board=Array(64).fill(null);render();syncFen()};$("erase").onclick=()=>{eraseMode=true;renderPalette()};$("flip").onclick=()=>{flipped=!flipped;render()};$("loadFen").onclick=loadFen;$("analyze").onclick=analyze;$("playMove").onclick=applyBest;$("copyFen").onclick=()=>{navigator.clipboard?.writeText(fenFromBoard());$("explain").textContent="FEN panoya kopyalandı."};$("turn").onchange=syncFen;
+$("share").onclick=async()=>{try{const stream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:false});$("preview").srcObject=stream;$("stopShare").disabled=false;$("shareStatus").textContent="Ekran paylaşılıyor.";stream.getVideoTracks()[0].addEventListener("ended",stopShare)}catch(e){$("shareStatus").textContent="Paylaşım başlatılamadı: "+e.message}};
+function stopShare(){const v=$("preview");if(v.srcObject)v.srcObject.getTracks().forEach(t=>t.stop());v.srcObject=null;$("stopShare").disabled=true;$("shareStatus").textContent="Paylaşım durduruldu."}
+$("stopShare").onclick=stopShare;
+setStart();renderPalette();initEngine();
+</script></body></html>
