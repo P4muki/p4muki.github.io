@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a5bd1"/>
+      <stop offset="0.45" stop-color="#2fa4f0"/>
+      <stop offset="0.75" stop-color="#8fe0ff"/>
+      <stop offset="1" stop-color="#d9f7ff"/>
+    </linearGradient>
+    <linearGradient id="hill1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b6f56a"/><stop offset="1" stop-color="#37b957"/>
+    </linearGradient>
+    <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7fe07a"/><stop offset="1" stop-color="#1f9d5c"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7defff" stop-opacity="0.9"/><stop offset="1" stop-color="#1b8fe0" stop-opacity="0.9"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#fff" stop-opacity="1"/>
+      <stop offset="0.25" stop-color="#e8fbff" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#bff1ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="bubble" cx="35%" cy="30%" r="75%">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.9"/>
+      <stop offset="0.35" stop-color="#bff4ff" stop-opacity="0.25"/>
+      <stop offset="0.9" stop-color="#6fdcff" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.65"/>
+    </radialGradient>
+    <filter id="blur40" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="40"/></filter>
+    <filter id="blur14" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="blur4" x="-5%" y="-30%" width="110%" height="160%"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <circle cx="1380" cy="250" r="420" fill="url(#sun)"/>
+  <!-- light rays -->
+  <g opacity="0.22" filter="url(#blur14)" fill="#fff">
+    <polygon points="1380,250 700,1080 900,1080"/>
+    <polygon points="1380,250 1100,1080 1260,1080"/>
+    <polygon points="1380,250 1500,1080 1700,1080"/>
+    <polygon points="1380,250 0,700 0,540"/>
+  </g>
+  <!-- clouds -->
+  <g fill="#fff" filter="url(#blur40)" opacity="0.9">
+    <ellipse cx="320" cy="260" rx="260" ry="70"/><ellipse cx="520" cy="230" rx="200" ry="80"/>
+    <ellipse cx="1550" cy="430" rx="300" ry="64"/><ellipse cx="1180" cy="420" rx="220" ry="54"/>
+    <ellipse cx="860" cy="120" rx="240" ry="48"/>
+  </g>
+  <g fill="#fff" filter="url(#blur14)" opacity="0.75">
+    <ellipse cx="380" cy="300" rx="180" ry="34"/><ellipse cx="1480" cy="460" rx="190" ry="28"/>
+  </g>
+  <!-- far hills -->
+  <path d="M0 640 C220 560 420 580 640 640 C860 700 1060 600 1280 590 C1500 580 1720 640 1920 600 L1920 1080 L0 1080 Z" fill="#7bd4a0" opacity="0.7" filter="url(#blur4)"/>
+  <!-- water -->
+  <path d="M0 760 C300 730 600 770 960 750 C1300 735 1620 770 1920 745 L1920 1080 L0 1080 Z" fill="url(#water)"/>
+  <g fill="none" stroke="#fff" stroke-linecap="round" opacity="0.55">
+    <path d="M120 820 C300 806 480 834 700 818" stroke-width="3"/>
+    <path d="M900 860 C1100 846 1280 874 1500 858" stroke-width="3"/>
+    <path d="M300 930 C520 918 760 944 1020 928" stroke-width="2"/>
+    <path d="M1200 960 C1400 948 1600 972 1820 956" stroke-width="2"/>
+  </g>
+  <!-- near hills -->
+  <path d="M0 800 C160 700 380 690 600 760 C760 810 880 880 1020 960 C1080 1010 1120 1050 1150 1080 L0 1080 Z" fill="url(#hill1)"/>
+  <path d="M0 800 C160 700 380 690 600 760 C760 810 880 880 1020 960 C1080 1010 1120 1050 1150 1080" fill="none" stroke="#eaffc2" stroke-width="3" opacity="0.8"/>
+  <path d="M1920 790 C1760 720 1560 730 1400 800 C1280 860 1180 940 1100 1080 L1920 1080 Z" fill="url(#hill2)"/>
+  <path d="M1920 790 C1760 720 1560 730 1400 800 C1280 860 1180 940 1100 1080" fill="none" stroke="#d4ffb0" stroke-width="3" opacity="0.7"/>
+  <!-- bubbles -->
+  <g>
+    <g id="b"><circle r="1" fill="url(#bubble)"/><circle r="1" fill="none" stroke="#fff" stroke-opacity="0.8" stroke-width="0.04"/></g>
+    <use href="#b" transform="translate(300,520) scale(70)"/>
+    <use href="#b" transform="translate(470,610) scale(30)"/>
+    <use href="#b" transform="translate(220,660) scale(18)"/>
+    <use href="#b" transform="translate(1120,330) scale(46)"/>
+    <use href="#b" transform="translate(1710,260) scale(88)"/>
+    <use href="#b" transform="translate(1800,470) scale(26)"/>
+    <use href="#b" transform="translate(760,430) scale(22)"/>
+    <use href="#b" transform="translate(1000,620) scale(40)"/>
+    <use href="#b" transform="translate(1400,640) scale(16)"/>
+    <use href="#b" transform="translate(120,200) scale(34)"/>
+  </g>
+  <!-- lens sparkles -->
+  <g fill="#fff" opacity="0.9">
+    <path d="M1380 190 L1388 244 L1442 252 L1388 260 L1380 314 L1372 260 L1318 252 L1372 244 Z" transform="translate(0,-2)"/>
+    <circle cx="1540" cy="330" r="6"/><circle cx="1240" cy="150" r="4"/><circle cx="1600" cy="180" r="3"/>
+  </g>
+</svg>

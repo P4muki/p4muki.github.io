@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aeris OS – Gökyüzü kadar açık, cam kadar temiz</title>
+<meta name="description" content="Aeris OS: macOS düzeninde çalışan, Frutiger Aero görünümlü özgür işletim sistemi. ISO'yu indir, USB'ye yaz, dene.">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<style>
+:root{
+  --ink:#10284a; --ink2:#41607f; --blue:#1890eb; --sky:#7fd1ff; --aqua:#3fe0d0; --leaf:#6fdc5f;
+  --glass:rgba(255,255,255,.55); --glass-strong:rgba(255,255,255,.78); --stroke:rgba(255,255,255,.85);
+  --shadow:0 18px 50px rgba(10,60,140,.28), 0 2px 0 rgba(255,255,255,.7) inset;
+}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:Inter,"SF Pro Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  color:var(--ink); min-height:100vh; padding:64px 20px 150px;
+  background:#2fa4f0 url(wallpaper.svg) center top / cover fixed no-repeat;
+  -webkit-font-smoothing:antialiased;
+}
+/* --- Menü çubuğu --- */
+.menubar{
+  position:fixed; inset:0 0 auto 0; height:30px; z-index:50; display:flex; align-items:center; gap:4px; padding:0 14px;
+  background:linear-gradient(rgba(255,255,255,.72),rgba(215,240,255,.5)); backdrop-filter:blur(18px) saturate(160%);
+  border-bottom:1px solid rgba(255,255,255,.8); box-shadow:0 1px 12px rgba(10,60,140,.18); font-size:13px;
+}
+.menubar img{width:18px;height:18px;margin-right:8px}
+.menubar b{margin-right:10px}
+.menubar a{color:var(--ink);text-decoration:none;padding:3px 9px;border-radius:6px}
+.menubar a:hover{background:rgba(24,144,235,.9);color:#fff}
+.menubar .sp{flex:1}
+.menubar .clock{font-variant-numeric:tabular-nums;color:var(--ink2);font-size:12.5px}
+@media(max-width:720px){.menubar a.hide{display:none}}
+
+/* --- Pencere --- */
+.wrap{max-width:1040px;margin:0 auto;display:grid;gap:34px}
+.win{
+  position:relative; border-radius:16px; background:var(--glass); backdrop-filter:blur(22px) saturate(170%);
+  border:1px solid var(--stroke); box-shadow:var(--shadow); overflow:hidden;
+}
+.win::before{ /* üst cam parlaması */
+  content:""; position:absolute; inset:0 0 auto 0; height:46%; pointer-events:none;
+  background:linear-gradient(rgba(255,255,255,.55),rgba(255,255,255,0)); border-radius:16px 16px 60% 60%/16px 16px 30px 30px;
+}
+.titlebar{position:relative;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;cursor:grab;user-select:none;
+  background:linear-gradient(rgba(255,255,255,.7),rgba(200,230,250,.45)); border-bottom:1px solid rgba(255,255,255,.7)}
+.titlebar:active{cursor:grabbing}
+.dot{width:13px;height:13px;border-radius:50%;border:1px solid rgba(0,0,0,.18);
+  box-shadow:inset 0 -4px 5px rgba(0,0,0,.14), inset 0 3px 4px rgba(255,255,255,.85)}
+.dot.r{background:radial-gradient(circle at 50% 30%,#ffb2a6,#ff5f57 70%)}
+.dot.y{background:radial-gradient(circle at 50% 30%,#fff0a8,#ffbd2e 70%)}
+.dot.g{background:radial-gradient(circle at 50% 30%,#b8ffb0,#28c840 70%)}
+.titlebar span.t{position:absolute;left:0;right:0;text-align:center;font-size:13px;font-weight:600;color:var(--ink2);pointer-events:none}
+.body{position:relative;padding:34px clamp(20px,4vw,48px) 40px}
+
+/* --- Hero --- */
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:30px;align-items:center}
+@media(max-width:820px){.hero{grid-template-columns:1fr;text-align:center}.hero .cta{justify-content:center}}
+.eyebrow{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#0a6bd0;
+  background:rgba(255,255,255,.7);border:1px solid #fff;padding:4px 12px;border-radius:99px;margin-bottom:16px}
+h1{font-size:clamp(34px,5.4vw,60px);line-height:1.04;letter-spacing:-.025em;color:#0a2f66;text-shadow:0 2px 0 rgba(255,255,255,.7)}
+h1 em{font-style:normal;text-shadow:none;background:linear-gradient(90deg,#0a6fe0,#0f9fb0 55%,#22a448);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(255,255,255,.7))}
+.lead{margin:18px 0 26px;font-size:18px;line-height:1.55;color:var(--ink2);max-width:46ch}
+.cta{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.btn{
+  position:relative;display:inline-flex;align-items:center;gap:10px;padding:15px 28px;border-radius:99px;font:600 17px Inter,system-ui,sans-serif;
+  color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.9);cursor:pointer;
+  background:linear-gradient(#58d3ff 0%,#1b94ee 50%,#0b6fd8 51%,#25b9a0 100%);
+  box-shadow:0 8px 22px rgba(10,100,200,.45), inset 0 2px 0 rgba(255,255,255,.75), inset 0 -3px 8px rgba(0,60,120,.25);
+  text-shadow:0 1px 2px rgba(0,50,110,.45);transition:transform .15s, filter .15s;overflow:hidden
+}
+.btn::after{content:"";position:absolute;left:6%;right:6%;top:2px;height:48%;border-radius:99px;background:linear-gradient(rgba(255,255,255,.75),rgba(255,255,255,.08));pointer-events:none}
+.btn:hover{transform:translateY(-2px);filter:brightness(1.06)}
+.btn.alt{background:linear-gradient(#fff,#d9eefb);color:#0a4fa8;text-shadow:none;box-shadow:0 6px 16px rgba(10,100,200,.22), inset 0 2px 0 #fff}
+.btn.alt::after{display:none}
+.btn[aria-disabled="true"]{filter:saturate(.7)}
+.meta{margin-top:14px;font-size:13px;color:var(--ink2)}
+.orb{display:grid;place-items:center}
+.orb img{width:min(100%,360px);filter:drop-shadow(0 24px 30px rgba(10,60,140,.35));animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-12px)}}
+
+/* --- Bölümler --- */
+h2{font-size:28px;letter-spacing:-.015em;margin-bottom:6px;color:#0a2f66}
+.sub{color:var(--ink2);margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.card{background:linear-gradient(rgba(255,255,255,.9),rgba(235,247,255,.7));border:1px solid #fff;border-radius:14px;padding:18px;
+  box-shadow:0 6px 18px rgba(10,80,160,.12), inset 0 1px 0 #fff}
+.card .ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:20px;margin-bottom:10px;color:#fff;
+  background:linear-gradient(#6fdcff,#1890eb);box-shadow:inset 0 2px 0 rgba(255,255,255,.7),0 4px 10px rgba(24,144,235,.4)}
+.card:nth-child(3n+2) .ico{background:linear-gradient(#a7f27a,#27b25c)}
+.card:nth-child(3n) .ico{background:linear-gradient(#7ff0e2,#12a9b8)}
+.card h3{font-size:16px;margin-bottom:5px}
+.card p{font-size:14px;line-height:1.5;color:var(--ink2)}
+.apps{display:flex;flex-wrap:wrap;gap:10px}
+.chip{padding:8px 15px;border-radius:99px;background:linear-gradient(#fff,#def0fc);border:1px solid #fff;font-size:14px;box-shadow:0 3px 8px rgba(10,80,160,.12)}
+.steps{counter-reset:s;display:grid;gap:12px;list-style:none;padding:0}
+.steps li{counter-increment:s;display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.8);border:1px solid #fff}
+.steps li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;
+  background:linear-gradient(#6fdcff,#1890eb);box-shadow:inset 0 2px 0 rgba(255,255,255,.7)}
+code,.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:13px}
+.hash{display:block;margin-top:8px;padding:12px 14px;border-radius:10px;background:rgba(10,47,102,.92);color:#bff4ff;word-break:break-all}
+details{background:rgba(255,255,255,.8);border:1px solid #fff;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600}
+details p{margin-top:8px;color:var(--ink2);line-height:1.55;font-size:14.5px}
+footer{text-align:center;color:#fff;text-shadow:0 1px 6px rgba(0,50,120,.6);font-size:13px;margin-top:10px}
+
+/* --- Dock --- */
+.dock{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:60;display:flex;gap:10px;align-items:flex-end;padding:10px 14px;
+  background:linear-gradient(rgba(255,255,255,.6),rgba(190,230,255,.42));backdrop-filter:blur(20px) saturate(170%);
+  border:1px solid rgba(255,255,255,.9);border-radius:24px;box-shadow:0 14px 40px rgba(10,60,140,.35), inset 0 1px 0 #fff}
+.dock a{position:relative;display:block;width:52px;height:52px;border-radius:14px;transition:transform .18s cubic-bezier(.3,1.6,.5,1);transform-origin:bottom;
+  display:grid;place-items:center;color:#fff;font-size:24px;text-decoration:none;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.7), inset 0 -6px 10px rgba(0,50,110,.22), 0 6px 12px rgba(10,60,140,.3)}
+.dock a:hover{transform:scale(1.35) translateY(-6px)}
+.dock a::after{content:attr(data-l);position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%);background:rgba(10,47,102,.92);color:#fff;font-size:12px;padding:4px 10px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s}
+.dock a:hover::after{opacity:1}
+.d1{background:linear-gradient(#7fdcff,#1890eb)}.d2{background:linear-gradient(#b4f58a,#27b25c)}.d3{background:linear-gradient(#8ff3e6,#12a9b8)}
+.d4{background:linear-gradient(#a9c7ff,#4a6fe0)}.d5{background:linear-gradient(#ffe38a,#f2a31b)}
+.dock img{width:34px;height:34px}
+@media(max-width:520px){.dock a{width:44px;height:44px;font-size:20px}.dock{gap:6px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="menubar" aria-label="Menü çubuğu">
+  <img src="logo.svg" alt="">
+  <b>Aeris OS</b>
+  <a href="#indir">İndir</a><a class="hide" href="#ozellikler">Özellikler</a><a class="hide" href="#uygulamalar">Uygulamalar</a><a class="hide" href="#kurulum">Kurulum</a><a class="hide" href="#sss">SSS</a>
+  <span class="sp"></span><span class="clock" id="clock"></span>
+</nav>
+
+<main class="wrap">
+
+  <section class="win" id="indir" aria-label="Aeris OS'a hoş geldin">
+    <div class="titlebar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">Aeris OS 1.0</span></div>
+    <div class="body hero">
+      <div>
+        <span class="eyebrow">Özgür · Hızlı · Pırıl pırıl</span>
+        <h1>Gökyüzü kadar <em>açık</em>, cam kadar <em>temiz</em>.</h1>
+        <p class="lead">Aeris OS, macOS düzeninde çalışan, Frutiger Aero ruhuyla yeniden çizilmiş özgür bir işletim sistemi. Tarayıcı, ofis, medya ve tüm temel uygulamalar kutudan çıkar çıkmaz hazır.</p>
+        <div class="cta">
+          <a class="btn" id="dl" href="#kurulum">⬇ ISO'yu İndir</a>
+          <a class="btn alt" href="#ozellikler">Özellikleri Gör</a>
+        </div>
+        <p class="meta" id="dlmeta">Aeris OS 1.0 · 64-bit (amd64) · UEFI ve BIOS</p>
+      </div>
+      <div class="orb"><img src="logo.svg" alt="Aeris OS logosu"></div>
+    </div>
+  </section>
+
+  <section class="win" id="ozellikler">
+    <div class="titlebar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">Özellikler</span></div>
+    <div class="body">
+      <h2>Tanıdık düzen, yepyeni his</h2>
+      <p class="sub">Klasik Macintosh'tan bugünün macOS'una uzanan akıcı bir deneyim, cam efektleri ve sakin renklerle.</p>
+      <div class="grid">
+        <div class="card"><div class="ico">▭</div><h3>Global menü çubuğu</h3><p>Üstte tek bir menü çubuğu: Aeris menüsü, aktif uygulamanın menüleri, saat ve sistem tepsisi.</p></div>
+        <div class="card"><div class="ico">▣</div><h3>Yüzen dock</h3><p>Büyüyen ikonlar, sabit uygulamalar ve çöp kutusu. Pencere gelince kendiliğinden saklanır.</p></div>
+        <div class="card"><div class="ico">⌕</div><h3>Spotlight tarzı arama</h3><p>Uygulama, dosya ve hesaplama için tek kutu. Alt+Boşluk ile aç.</p></div>
+        <div class="card"><div class="ico">▦</div><h3>Launchpad</h3><p>Tüm uygulamaların tam ekran, ızgara görünümü.</p></div>
+        <div class="card"><div class="ico">◫</div><h3>Mission Control</h3><p>Açık pencerelerin tek bakışta genel görünümü (Meta+W).</p></div>
+        <div class="card"><div class="ico">✦</div><h3>Frutiger Aero görünüm</h3><p>Camsı paneller, parlak düğmeler, gökyüzü ve çimen tonları, baloncuklar ve su yansımaları.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="uygulamalar">
+    <div class="titlebar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">Uygulamalar</span></div>
+    <div class="body">
+      <h2>İhtiyacın olan her şey içinde</h2>
+      <p class="sub">Kurulumdan hemen sonra iş yapmaya hazırsın. Daha fazlası için yazılım mağazasında Flathub açık.</p>
+      <div class="apps">
+        <span class="chip">🌐 Firefox tarayıcı</span><span class="chip">✉ Thunderbird e-posta</span><span class="chip">📁 Dolphin dosya yöneticisi</span>
+        <span class="chip">📝 LibreOffice Yazı, Hesap, Sunu</span><span class="chip">📄 Okular PDF</span><span class="chip">🖼 Gwenview fotoğraf</span>
+        <span class="chip">🎬 VLC medya</span><span class="chip">🎵 Elisa müzik</span><span class="chip">⌨ Konsole terminal</span>
+        <span class="chip">✎ Kate metin düzenleyici</span><span class="chip">🧮 Hesap makinesi</span><span class="chip">📸 Ekran görüntüsü</span>
+        <span class="chip">🛍 Yazılım mağazası</span><span class="chip">🖨 Yazıcı desteği</span><span class="chip">📶 Wi-Fi ve Bluetooth</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="win" id="kurulum">
+    <div class="titlebar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">Kurulum ve doğrulama</span></div>
+    <div class="body">
+      <h2>USB'ye yaz, dene, kur</h2>
+      <p class="sub">En az 4 GB bir USB bellek, 4 GB RAM ve 25 GB boş disk önerilir.</p>
+      <ol class="steps">
+        <li><div><b>ISO'yu indir.</b> Yukarıdaki indirme düğmesini kullan, sonra aşağıdaki SHA256 değeriyle doğrula.</div></li>
+        <li><div><b>USB'ye yaz.</b> Windows ve macOS'ta <b>balenaEtcher</b> ya da Windows'ta <b>Rufus</b> (DD modu); Linux'ta <code>sudo dd if=aeris-os-1.0-amd64.hybrid.iso of=/dev/sdX bs=4M status=progress</code></div></li>
+        <li><div><b>USB'den başlat.</b> Bilgisayarı açarken önyükleme menüsüne girip USB'yi seç. Canlı modda önce dene, beğenirsen masaüstündeki kurucuyla diske kur.</div></li>
+      </ol>
+      <p style="margin-top:22px"><b>SHA256</b></p>
+      <code class="hash mono" id="sha">ISO yayımlandığında burada görünecek.</code>
+      <p class="meta" style="margin-top:10px">Doğrulamak için: <code>sha256sum aeris-os-1.0-amd64.hybrid.iso</code></p>
+    </div>
+  </section>
+
+  <section class="win" id="sss">
+    <div class="titlebar"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i><span class="t">Sık sorulan sorular</span></div>
+    <div class="body">
+      <h2>Merak edilenler</h2><p class="sub"></p>
+      <details><summary>Aeris OS ücretsiz mi?</summary><p>Evet. Özgür yazılım bileşenleriyle oluşturuldu; indirmek ve kullanmak ücretsiz.</p></details>
+      <details><summary>Apple ile bir ilgisi var mı?</summary><p>Hayır. Aeris OS bağımsız bir projedir; ad, logo, ikon ve duvar kağıtlarının tamamı özgündür. Sadece düzen alışkanlıklarından ilham alır.</p></details>
+      <details><summary>Windows'un yanına kurabilir miyim?</summary><p>Evet, kurucu diski bölmene ve çift önyükleme kurmana izin verir. Yine de önemli dosyaların yedeğini almadan kuruluma başlama.</p></details>
+      <details><summary>Windows ve macOS uygulamaları çalışır mı?</summary><p>Linux uygulamaları ve Flathub'daki binlerce yazılım çalışır. Windows uygulamaları için Wine veya Bottles kullanılabilir; macOS uygulamaları çalışmaz.</p></details>
+      <details><summary>Daha önce denenmiş mi?</summary><p>Aeris OS 1.0 ilk sürümdür. Önce sanal makinede (VirtualBox, QEMU) ya da canlı USB ile dene.</p></details>
+    </div>
+  </section>
+
+  <footer>Aeris OS · Özgün tasarım · Gökyüzü kadar açık</footer>
+</main>
+
+<nav class="dock" aria-label="Dock">
+  <a class="d1" href="#indir" data-l="Başlangıç"><img src="logo.svg" alt=""></a>
+  <a class="d2" href="#ozellikler" data-l="Özellikler">✦</a>
+  <a class="d3" href="#uygulamalar" data-l="Uygulamalar">▦</a>
+  <a class="d4" href="#kurulum" data-l="Kurulum">⬇</a>
+  <a class="d5" href="#sss" data-l="SSS">?</a>
+</nav>
+
+<script>
+// ===== Sürüm ayarı: ISO yayımlanınca burayı doldur =====
+const RELEASE = {
+  url: "",       // örn. "https://github.com/p4muki/aeris-os/releases/download/v1.0/aeris-os-1.0-amd64.hybrid.iso"
+  sha256: "",    // build.sh çıktısındaki SHA256 değeri
+  size: ""       // örn. "3.4 GB"
+};
+(function(){
+  const dl=document.getElementById('dl'), meta=document.getElementById('dlmeta'), sha=document.getElementById('sha');
+  if(RELEASE.url){
+    dl.href=RELEASE.url; dl.setAttribute('download','');
+    if(RELEASE.size) meta.textContent+=' · '+RELEASE.size;
+    if(RELEASE.sha256) sha.textContent=RELEASE.sha256;
+  }else{
+    dl.textContent='⏳ ISO yakında'; dl.setAttribute('aria-disabled','true');
+    meta.textContent='Aeris OS 1.0 hazırlanıyor. ISO yayımlandığında bu düğme indirmeyi başlatacak.';
+  }
+  // saat
+  const c=document.getElementById('clock');
+  const tick=()=>{c.textContent=new Date().toLocaleString('tr-TR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})};
+  tick(); setInterval(tick,30000);
+  // sürüklenebilir pencereler
+  document.querySelectorAll('.win').forEach(w=>{
+    const bar=w.querySelector('.titlebar'); let sx,sy,ox=0,oy=0,drag=false;
+    bar.addEventListener('pointerdown',e=>{drag=true;sx=e.clientX-ox;sy=e.clientY-oy;bar.setPointerCapture(e.pointerId);w.style.zIndex=10});
+    bar.addEventListener('pointermove',e=>{if(!drag)return;ox=e.clientX-sx;oy=e.clientY-sy;w.style.transform=`translate(${ox}px,${oy}px)`});
+    bar.addEventListener('pointerup',()=>drag=false);
+    // sarı düğme: gövdeyi daralt / aç
+    w.querySelector('.dot.y').addEventListener('click',()=>{const b=w.querySelector('.body');b.style.display=b.style.display==='none'?'':'none'});
+  });
+})();
+</script>
+</body>
+</html>
